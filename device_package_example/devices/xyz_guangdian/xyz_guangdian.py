@@ -6,6 +6,7 @@ XYZ光电工作台设备驱动 - 修复版
 
 import logging
 import time as time_module
+import asyncio
 from typing import Dict, Any, Optional
 import struct
 
@@ -39,7 +40,7 @@ except ImportError:
     display_name="XYZ 三维平台"
 )
 class XYZGuangdian:
-    _ros_node: "BaseROS2DeviceNode"
+    _ros_node: Optional["BaseROS2DeviceNode"] = None
 
     def __init__(self, device_id: str = None, config: Dict[str, Any] = None, **kwargs):
         if device_id is None and 'id' in kwargs:
@@ -187,12 +188,12 @@ class XYZGuangdian:
                 
                 # 读取寄存器
                 response = self.modbus_client.read_holding_registers(
-                    register, count, slave=address
+                    register, count=count, device_id=address
                 )
                 
                 if response.isError():
                     self.logger.warning(f"读取寄存器失败 (尝试 {attempt+1}/{self.retry_count}): {response}")
-                    await self._ros_node.sleep(self.retry_delay)
+                    await asyncio.sleep(self.retry_delay)
                     continue
                 
                 # 成功读取
@@ -203,7 +204,7 @@ class XYZGuangdian:
             except Exception as e:
                 last_exception = e
                 self.logger.warning(f"读取寄存器异常 (尝试 {attempt+1}/{self.retry_count}): {e}")
-                await self._ros_node.sleep(self.retry_delay)
+                await asyncio.sleep(self.retry_delay)
         
         self.logger.error(f"读取寄存器最终失败: {last_exception}")
         return None
@@ -232,16 +233,16 @@ class XYZGuangdian:
                 
                 # 写入寄存器
                 response = self.modbus_client.write_register(
-                    register, value, slave=address
+                    register, value, device_id=address
                 )
                 
                 if response.isError():
                     self.logger.warning(f"写入寄存器失败 (尝试 {attempt+1}/{self.retry_count}): {response}")
-                    await self._ros_node.sleep(self.retry_delay)
+                    await asyncio.sleep(self.retry_delay)
                     continue
-                
+
                 # 验证写入
-                await self._ros_node.sleep(0.05)
+                await asyncio.sleep(0.05)
                 verify_response = await self._read_register_safe(address, register, 1)
                 if verify_response and verify_response.registers[0] == value:
                     if attempt > 0:
@@ -249,13 +250,13 @@ class XYZGuangdian:
                     return True
                 else:
                     self.logger.warning(f"写入验证失败 (尝试 {attempt+1}/{self.retry_count})")
-                    await self._ros_node.sleep(self.retry_delay)
+                    await asyncio.sleep(self.retry_delay)
                     continue
-                    
+
             except Exception as e:
                 last_exception = e
                 self.logger.warning(f"写入寄存器异常 (尝试 {attempt+1}/{self.retry_count}): {e}")
-                await self._ros_node.sleep(self.retry_delay)
+                await asyncio.sleep(self.retry_delay)
         
         self.logger.error(f"写入寄存器最终失败: {last_exception}")
         return False
@@ -392,7 +393,7 @@ class XYZGuangdian:
                     return False
             
             # 修复：使用正确的异步等待
-            await self._ros_node.sleep(2.0)  # 等待回零完成
+            await asyncio.sleep(2.0)  # 等待回零完成
             
             # 检查回零状态
             homed_axes = 0
@@ -488,7 +489,7 @@ class XYZGuangdian:
             
             if wait_done:
                 # 等待移动完成
-                await self._ros_node.sleep(1.0)  # 修复：使用正确的异步等待
+                await asyncio.sleep(1.0)  # 修复：使用正确的异步等待
                 
                 # 检查是否到达目标
                 all_reached = True
