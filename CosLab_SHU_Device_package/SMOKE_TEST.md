@@ -1,6 +1,10 @@
 # 本地硬件冒烟测试
 
-插上硬件后，进入设备目录执行对应命令，几秒内即可看到连接与读数反馈。
+插上硬件后，在 `CosLab_SHU_Device_package/` 目录下执行对应命令，几秒内即可看到连接与读数反馈。
+
+```bash
+cd CosLab_SHU_Device_package
+```
 
 ## 通用参数
 
@@ -91,7 +95,7 @@ python devices/electrolytic_cell_gripper/electrolytic_cell_gripper.py --port COM
 | 阶段 | 命令 | 目的 |
 |------|------|------|
 | 1. 硬件冒烟 | `python <驱动>.py` | 确认驱动能控制本机硬件 |
-| 2. Schema 校验 | `unilab --check_mode --devices ./device_package_example --external_devices_only` | CI / 注册表 |
+| 2. Schema 校验 | `unilab --check_mode --devices ./CosLab_SHU_Device_package --external_devices_only` | CI / 注册表 |
 | 3. 框架集成 | `unilab -g graph.json --backend simple` | 接入 Uni-Lab |
 
 冒烟脚本仅在 `python <驱动>.py` 时执行，**不影响** `import` 与 registry 扫描。

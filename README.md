@@ -1,36 +1,28 @@
-# LabDeviceTemplate
+# CosLab-SHU-DeviceTemplate
 
-Uni-Lab-OS 外部设备包模板仓库。Fork 本仓库即可快速创建你自己的设备驱动包。
+上海大学 MGI-CosLab 的 Uni-Lab-OS 外部设备包仓库。基于 [LabDeviceTemplate](https://github.com/Xuwznln/LabDeviceTemplate) fork 并扩展。
 
 **创建时间**: 2026-03
 
 ## 功能
 
-- 提供标准的设备包目录结构
-- 包含一个示例计数设备 (`counting_device.py`)
+- 提供 CosLab 实验室设备驱动（16 个设备）
+- 内置本地硬件冒烟测试（`smoke_runner.py`）
 - 内置 GitHub Actions CI，自动验证注册表
 
 ## 快速开始
 
-### 1. Fork 本仓库
+### 1. 安装依赖
 
-点击右上角 **Fork** 按钮，创建你自己的仓库副本。
-
-### 2. 修改包名
-
-将 `device_package_example/` 目录重命名为你的设备包名称，例如 `my_lab_devices/`。
-
-同时更新 `pyproject.toml` 中的包名和描述：
-
-```toml
-[project]
-name = "my_lab_devices"
-description = "我的实验室设备包"
+```bash
+pip install -e .
+# 或按需安装
+pip install -r requirements.txt
 ```
 
-### 3. 编写设备代码
+### 2. 编写 / 修改设备代码
 
-参考 `device_package_example/counting_device.py` 示例，使用 `@device` 装饰器编写你的设备类：
+所有设备驱动位于 `CosLab_SHU_Device_package/devices/`。使用 `@device` 装饰器编写设备类：
 
 ```python
 from unilabos.registry.decorators import device, action, topic_config
@@ -69,20 +61,22 @@ class MyDevice:
         return self.data.get("status", "idle")
 ```
 
-### 4. 本地硬件冒烟（推荐第一步）
+参考 `CosLab_SHU_Device_package/counting_device.py` 查看最简示例。
+
+### 3. 本地硬件冒烟（推荐第一步）
 
 插上硬件后，直接运行驱动文件，几秒内验证通信与控制：
 
 ```bash
 pip install pyserial   # 按设备 README 安装依赖
 
-cd device_package_example
+cd CosLab_SHU_Device_package
 python devices/hk_a0/hk_a0.py --port COM3 -v
 ```
 
-成功时会看到 `✓ 连接成功` 和只读验证结果。完整命令列表见 [`device_package_example/SMOKE_TEST.md`](device_package_example/SMOKE_TEST.md)。
+成功时会看到 `✓ 连接成功` 和只读验证结果。完整命令列表见 [`CosLab_SHU_Device_package/SMOKE_TEST.md`](CosLab_SHU_Device_package/SMOKE_TEST.md)。
 
-### 5. 本地开发与 Uni-Lab 集成
+### 4. 本地开发与 Uni-Lab 集成
 
 ```bash
 # 创建 conda 环境并安装 unilabos（需要 ROS2 完整环境）
@@ -91,31 +85,36 @@ mamba activate unilab
 mamba install uni-lab::unilabos -c uni-lab -c robostack-staging -c conda-forge -y
 
 # 验证注册表（check mode，会自动检测并安装 requirements.txt 中的依赖）
-unilab --check_mode --devices ./device_package_example --external_devices_only
+unilab --check_mode --devices ./CosLab_SHU_Device_package --external_devices_only
 
 # 启动服务（带实验图）
-unilab --devices ./device_package_example --external_devices_only -g graph.json
+unilab --devices ./CosLab_SHU_Device_package --external_devices_only \
+  -g CosLab_SHU_Device_package/graph_combined_lab.json
 ```
 
 > **依赖自动安装**: unilabos 在启动时会自动检测 `--devices` 目录下的 `requirements.txt`，缺失的包会通过 `uv`（优先）或 `pip` 自动安装。
 
-### 6. CI 验证
+### 5. CI 验证
 
-Push 代码后，GitHub Actions 会自动运行 `--check_mode` 验证你的设备定义是否正确。
+Push 代码后，GitHub Actions 会自动运行 `--check_mode` 验证设备定义是否正确。
 
 ## 目录结构
 
 ```
-├── README.md                     # 本文件
-├── requirements.txt              # Python 依赖
-├── pyproject.toml                # 包配置（支持 pip install -e .）
-├── .github/
-│   └── workflows/
-│       └── check_registry.yml    # CI 自动验证
-├── CosLab_SHU_Device_package/       # 设备包（此处已重命名为Coslab的包名）
-│   ├── __init__.py
-│   └── counting_device.py        # 示例设备
-└── .gitignore
+├── README.md                          # 本文件
+├── requirements.txt                   # Python 依赖
+├── pyproject.toml                     # 包配置（pip install -e .）
+├── .github/workflows/check_registry.yml
+└── CosLab_SHU_Device_package/         # 正式设备包（唯一源码目录）
+    ├── __init__.py
+    ├── counting_device.py             # 示例设备
+    ├── smoke_runner.py                # 冒烟测试工具
+    ├── SMOKE_TEST.md                  # 冒烟测试命令列表
+    ├── graph_combined_lab.json        # 完整实验室拓扑
+    └── devices/                       # 各设备驱动
+        ├── hk_a0/
+        ├── xyz_guangdian/
+        └── ...
 ```
 
 ## 装饰器参考
@@ -150,7 +149,7 @@ Args:
 - `param[显示名称]` 中的显示名称会写入 JSON Schema 字段的 `title`。
 - `:` 后面的说明会写入 JSON Schema 字段的 `description`。
 - 如果只写 `param: 参数说明`，`title` 会兜底为字段名，`description` 使用参数说明。
-- 如果没有写参数文档，生成器也会兜底补齐 `title=<字段名>` 和 `description=""`，但设备包示例应优先写清楚显示名和说明。
+- 如果没有写参数文档，生成器也会兜底补齐 `title=<字段名>` 和 `description=""`，但设备包应优先写清楚显示名和说明。
 
 ## License
 

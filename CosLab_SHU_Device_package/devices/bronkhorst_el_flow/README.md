@@ -56,9 +56,9 @@ Bronkhorst EL-FLOW Prestige 质量流量控制器（MFC）驱动，支持读取�
 ## 启动验证
 
 ```bash
-unilab --check_mode --devices ./device_package_example --external_devices_only
-unilab --devices ./device_package_example --external_devices_only \
-  -g device_package_example/devices/bronkhorst_el_flow/graph_example_bronkhorst_el_flow.json
+unilab --check_mode --devices ./CosLab_SHU_Device_package --external_devices_only
+unilab --devices ./CosLab_SHU_Device_package --external_devices_only \
+  -g CosLab_SHU_Device_package/devices/bronkhorst_el_flow/graph_example_bronkhorst_el_flow.json
 ```
 
 ## 产品资料

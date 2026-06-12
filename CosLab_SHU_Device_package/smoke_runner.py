@@ -19,7 +19,7 @@ AsyncMainFn = Callable[[], Awaitable[int]]
 
 
 def setup_smoke_path() -> None:
-    """将 device_package_example 加入 sys.path，便于各驱动 import 本模块。"""
+    """将 CosLab_SHU_Device_package 加入 sys.path，便于各驱动 import 本模块。"""
     pkg_root = Path(__file__).resolve().parent
     root_str = str(pkg_root)
     if root_str not in sys.path:
