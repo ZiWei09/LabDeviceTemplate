@@ -1,5 +1,16 @@
 # CNI 532nm 激光器
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python cni_laser_msl_u_532.py --port COM13 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 CNI MSL-U-532-50mW 激光器驱动，通过 Arduino Nano + MCP4725 DAC 控制功率，串口发送 `SET 0-100` 指令。

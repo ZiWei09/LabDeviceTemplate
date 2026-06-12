@@ -228,3 +228,54 @@ class HKA0:
     @topic_config()
     def outputs(self) -> List[float]:
         return self.data.get("outputs", [0.0] * self.channel_count)
+
+
+# ========== 本地硬件冒烟==========
+# python hk_a0.py --port COM3 [-v] [--demo]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="华控模拟量输出 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="/dev/ttyUSB0", default_baudrate=9600)
+    parser.add_argument("--slave-address", type=int, default=1, dest="slave_address")
+    parser.add_argument("--channel-count", type=int, default=6, dest="channel_count")
+    parser.add_argument("--output-max", type=float, default=5.0, dest="output_max")
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = HKA0(
+            device_id="smoke_test",
+            config={
+                "port": args.port,
+                "baudrate": args.baudrate,
+                "slave_address": args.slave_address,
+                "channel_count": args.channel_count,
+                "output_max": args.output_max,
+            },
+        )
+
+        async def demo(dev_):
+            await dev_.set_output(1, 0.1)
+            await dev_.stop_all()
+
+        return await smoke_lifecycle(
+            dev,
+            read_fn=lambda d: d.read_outputs(),
+            demo_fn=demo,
+            do_demo=args.demo,
+        )
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

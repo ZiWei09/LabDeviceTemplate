@@ -69,7 +69,20 @@ class MyDevice:
         return self.data.get("status", "idle")
 ```
 
-### 4. 本地开发与测试
+### 4. 本地硬件冒烟（推荐第一步）
+
+插上硬件后，直接运行驱动文件，几秒内验证通信与控制：
+
+```bash
+pip install pyserial   # 按设备 README 安装依赖
+
+cd device_package_example
+python devices/hk_a0/hk_a0.py --port COM3 -v
+```
+
+成功时会看到 `✓ 连接成功` 和只读验证结果。完整命令列表见 [`device_package_example/SMOKE_TEST.md`](device_package_example/SMOKE_TEST.md)。
+
+### 5. 本地开发与 Uni-Lab 集成
 
 ```bash
 # 创建 conda 环境并安装 unilabos（需要 ROS2 完整环境）
@@ -86,7 +99,7 @@ unilab --devices ./device_package_example --external_devices_only -g graph.json
 
 > **依赖自动安装**: unilabos 在启动时会自动检测 `--devices` 目录下的 `requirements.txt`，缺失的包会通过 `uv`（优先）或 `pip` 自动安装。
 
-### 5. CI 验证
+### 6. CI 验证
 
 Push 代码后，GitHub Actions 会自动运行 `--check_mode` 验证你的设备定义是否正确。
 

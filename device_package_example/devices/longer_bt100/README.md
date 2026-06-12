@@ -1,5 +1,16 @@
 # 兰格蠕动泵
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python longer_bt100.py --port COM4 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 兰格 BT100-2J 蠕动泵驱动，WJ/RJ ASCII 协议，RS485 通信，支持转速、方向与启停控制。

@@ -773,3 +773,48 @@ class CHI760E:
     def data_folder(self) -> str:
         """数据保存目录"""
         return self.data.get("data_folder", "")
+
+
+# ========== 本地硬件冒烟==========
+# python chi760e.py --chi-exe-path "C:/CHI/chi760e.exe" --data-folder ./chi_data [-v]
+# 验证 CHI 软件路径与数据目录（不启动电化学实验）
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="CHI760E 电化学工作站 - 本地硬件冒烟")
+    parser.add_argument("--chi-exe-path", default="", dest="chi_exe_path", help="CHI 软件路径")
+    parser.add_argument("--data-folder", default="./chi_data", dest="data_folder", help="数据目录")
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = CHI760E(
+            device_id="smoke_test",
+            config={
+                "chi_exe_path": args.chi_exe_path,
+                "data_folder": args.data_folder,
+            },
+        )
+
+        def read_state(d):
+            return {
+                "status": d.status,
+                "data_folder": d.data_folder,
+                "chi_exe_path": d._chi_exe_path,
+            }
+
+        return await smoke_lifecycle(dev, read_fn=read_state)
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

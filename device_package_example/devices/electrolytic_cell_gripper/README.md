@@ -1,5 +1,16 @@
 # 电解池夹爪
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python electrolytic_cell_gripper.py --port COM29 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 电解池夹爪工作站驱动，整合 2 台**俏优灵**步进电机（水平/垂直）与 1 台**大寰** PGE 平行电爪。

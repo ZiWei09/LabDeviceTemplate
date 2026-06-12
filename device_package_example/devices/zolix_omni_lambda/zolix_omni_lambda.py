@@ -660,3 +660,35 @@ class ZolixOmniLambda:
     def system_info(self) -> str:
         """仪器系统信息"""
         return str(self.data.get("system_info", ""))
+
+
+# ========== 本地硬件冒烟==========
+# python zolix_omni_lambda.py --port COM11 [-v]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="Zolix Omni-λ 单色仪 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM11", default_baudrate=19200)
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = ZolixOmniLambda(
+            device_id="smoke_test",
+            config={"port": args.port, "baudrate": args.baudrate},
+        )
+        return await smoke_lifecycle(dev, read_fn=lambda d: d.query_system_info())
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

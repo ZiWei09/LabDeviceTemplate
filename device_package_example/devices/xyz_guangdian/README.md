@@ -1,5 +1,16 @@
 # XYZ 三维平台
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python xyz_guangdian.py --port COM35 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 XYZ 光电工作台驱动，控制三轴运动平台与推杆装置，Modbus RTU 通信，支持绝对/相对移动与推杆夹紧/释放。

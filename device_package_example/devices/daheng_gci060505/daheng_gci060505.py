@@ -217,3 +217,53 @@ class DahengGCI060505:
     async def refresh_status(self) -> bool:
         self._refresh_from_arduino()
         return True
+
+
+# ========== 本地硬件冒烟==========
+# python daheng_gci060505.py --port COM14 [-v] [--demo]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="大恒 GCI060505 光源 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM14", default_baudrate=115200)
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = DahengGCI060505(
+            device_id="smoke_test",
+            config={"port": args.port, "baudrate": args.baudrate},
+        )
+
+        async def read_state(d):
+            await d.refresh_status()
+            return {
+                "status": d.status,
+                "light_on": d.light_on,
+                "brightness": d.brightness,
+            }
+
+        async def demo(d):
+            await d.set_brightness(10.0)
+            await d.turn_off()
+
+        return await smoke_lifecycle(
+            dev,
+            read_fn=read_state,
+            demo_fn=demo,
+            do_demo=args.demo,
+        )
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

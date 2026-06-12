@@ -280,3 +280,45 @@ class CNILaserMSLU532:
         self.data["power"] = 0.0
         self.data["power_percentage"] = 0.0
         return True
+
+
+# ========== 本地硬件冒烟==========
+# python cni_laser_msl_u_532.py --port COM13 [-v]
+# 注意：仅验证串口通信与固件握手，不会开启激光
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="CNI 532nm 激光器 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM13", default_baudrate=9600)
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = CNILaserMSLU532(
+            device_id="smoke_test",
+            config={"port": args.port, "baudrate": args.baudrate},
+        )
+
+        def read_state(d):
+            return {
+                "status": d.status,
+                "laser_on": d.laser_on,
+                "power": d.power,
+                "wavelength": d.wavelength,
+            }
+
+        return await smoke_lifecycle(dev, read_fn=read_state)
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

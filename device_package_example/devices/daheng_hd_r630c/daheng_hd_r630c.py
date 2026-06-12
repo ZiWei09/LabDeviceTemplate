@@ -510,3 +510,53 @@ class DahengHdR630c:
             numpy.ndarray or None: BGR 格式图像数据
         """
         return self._last_image
+
+
+# ========== 本地硬件冒烟==========
+# python daheng_hd_r630c.py [--device-index 0] [-v] [--demo]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="大恒 HD-R630c 相机 - 本地硬件冒烟")
+    parser.add_argument("--device-index", type=int, default=0, dest="device_index")
+    parser.add_argument("--cti-path", default="", dest="cti_path", help="度申 DVP GenTL 路径（可选）")
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        config = {"device_index": args.device_index}
+        if args.cti_path:
+            config["cti_path"] = args.cti_path
+        dev = DahengHdR630c(device_id="smoke_test", config=config)
+
+        def read_state(d):
+            return {
+                "status": d.status,
+                "is_streaming": d.is_streaming,
+                "image_width": d.image_width,
+                "image_height": d.image_height,
+            }
+
+        async def demo(d):
+            return await d.snap()
+
+        return await smoke_lifecycle(
+            dev,
+            read_fn=read_state,
+            demo_fn=demo,
+            do_demo=args.demo,
+        )
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

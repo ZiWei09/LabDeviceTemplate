@@ -1,5 +1,16 @@
 # Zolix Omni-λ
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python zolix_omni_lambda.py --port COM11 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 Zolix Omni-λ 单色仪/光谱仪驱动，串口 ASCII 指令控制波长/波数移动、光栅切换与出入口选择。

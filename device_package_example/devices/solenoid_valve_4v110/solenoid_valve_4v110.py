@@ -232,3 +232,51 @@ class SolenoidValve4V110:
     @topic_config()
     def valve_position(self) -> str:
         return self.data.get("valve_position", "Closed")
+
+
+# ========== 本地硬件冒烟==========
+# python solenoid_valve_4v110.py --port COM3 [-v] [--demo]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="4V110 电磁阀 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM3", default_baudrate=9600)
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = SolenoidValve4V110(
+            device_id="smoke_test",
+            config={"port": args.port, "baudrate": args.baudrate},
+        )
+
+        async def read_state(d):
+            return {
+                "is_closed": await d.is_closed(),
+                "valve_position": d.valve_position,
+            }
+
+        async def demo(dev_):
+            await dev_.open()
+            await dev_.close()
+
+        return await smoke_lifecycle(
+            dev,
+            read_fn=read_state,
+            demo_fn=demo,
+            do_demo=args.demo,
+        )
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

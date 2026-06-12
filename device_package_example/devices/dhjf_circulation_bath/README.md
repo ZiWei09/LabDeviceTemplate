@@ -1,5 +1,16 @@
 # DHJF 循环水浴
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python dhjf_circulation_bath.py --port COM4 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 DHJF-2005A 低温恒温搅拌反应浴驱动，Modbus RTU 通信，支持温度设定、搅拌控制与多段程序。

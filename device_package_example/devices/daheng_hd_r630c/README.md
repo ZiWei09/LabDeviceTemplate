@@ -1,5 +1,16 @@
 # HD-R630C 工业相机
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python daheng_hd_r630c.py -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 实验室设备铭牌为 **大恒 HD-R630C-U3** USB3.0 彩色工业相机；据现场开发人员说明，该机本质为度申科技生产、大恒光电贴牌销售，**接入时使用度申 DVP 开发包**（GenTL）。本驱动基于 Harvesters + GenICam（USB3 Vision）接口，默认加载度申 `DVPCameraTL64.cti`。

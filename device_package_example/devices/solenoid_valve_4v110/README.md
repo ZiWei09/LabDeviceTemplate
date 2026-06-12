@@ -1,5 +1,16 @@
 # 4V110 电磁阀
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python solenoid_valve_4v110.py --port COM3 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 亚德客 4V110-06 DC24V 二位五通电磁阀驱动，通过 Arduino Uno GPIO + 继电器模块控制 24 V 线圈。

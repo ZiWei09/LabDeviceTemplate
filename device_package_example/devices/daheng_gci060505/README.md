@@ -1,5 +1,16 @@
 # GCI-060505 LED 光源
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python daheng_gci060505.py --port COM14 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 大恒 GCI-060505 LED 光源驱动，通过 Arduino + MCP4725 DAC 控制亮度，支持 PING/ON/OFF/BRIGHT/STATUS 指令。

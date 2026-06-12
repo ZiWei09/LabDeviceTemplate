@@ -1,5 +1,16 @@
 # 润泽注射泵
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python runze_sy03b_t08.py --port COM4 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 润泽 SY-03B 陶瓷注射泵（T-08 八通分配阀）驱动，ASCII DT 格式 RS232/RS485 通信，25 mL 注射器。

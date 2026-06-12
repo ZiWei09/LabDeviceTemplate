@@ -1,5 +1,16 @@
 # CMOS 线阵检测器
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python cmos_detector.py --port COM10 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 LCAMV8 CMOS 线阵检测器（S11639-01，2048 像素）驱动，支持积分时间、增益、单帧/连续采集及波长矫正。

@@ -1,5 +1,16 @@
 # CHI760E 电化学工作站
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python chi760e.py --chi-exe-path "C:/CHI/chi760e.exe" --data-folder ./chi_data -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 辰华 CHI760E 电化学工作站驱动，通过 CHI 软件宏命令（`.mcr`）控制，支持 CV / LSV / CA / OCP / NPV / EIS 等实验。

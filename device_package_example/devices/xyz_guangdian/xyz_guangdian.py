@@ -710,3 +710,35 @@ class XYZGuangdian:
         except Exception as e:
             self.logger.error(f"设置加速度失败: {e}")
             return False
+
+
+# ========== 本地硬件冒烟==========
+# python xyz_guangdian.py --port COM35 [-v]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="XYZ 光电台 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM35", default_baudrate=9600)
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = XYZGuangdian(
+            device_id="smoke_test",
+            config={"port": args.port, "baudrate": args.baudrate},
+        )
+        return await smoke_lifecycle(dev, read_fn=lambda d: d.get_position())
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

@@ -1,5 +1,16 @@
 # JY-HSM 温度变送器
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python jyhsm_temperature_transmitter.py --port COM4 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 安徽久跃 JY-HSM 一体化温度变送器驱动，Modbus RTU 读取实时温度，支持阈值监控与提醒。

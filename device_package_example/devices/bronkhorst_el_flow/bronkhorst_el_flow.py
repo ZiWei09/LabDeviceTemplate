@@ -279,3 +279,45 @@ class BronkhorstElFlow:
     @topic_config()
     def value(self) -> float:
         return self.data.get("value", 0.0)
+
+
+# ========== 本地硬件冒烟==========
+# python bronkhorst_el_flow.py --port COM12 [-v]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="Bronkhorst EL-FLOW - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM12", default_baudrate=38400)
+    parser.add_argument("--address", type=int, default=3)
+    parser.add_argument("--channel", type=int, default=1)
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = BronkhorstElFlow(
+            device_id="smoke_test",
+            config={
+                "port": args.port,
+                "baudrate": args.baudrate,
+                "address": args.address,
+                "channel": args.channel,
+            },
+        )
+        return await smoke_lifecycle(
+            dev,
+            read_fn=lambda d: d.read_value(),
+        )
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

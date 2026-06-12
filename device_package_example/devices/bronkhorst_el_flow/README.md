@@ -1,5 +1,16 @@
 # Bronkhorst MFC
 
+
+## 本地快速验证
+
+插上硬件后，在设备目录执行：
+
+```bash
+python bronkhorst_el_flow.py --port COM12 -v
+```
+
+加 `-v` 查看详细日志；部分设备支持 `--demo` 做低风险写操作验证。完整说明见 [SMOKE_TEST.md](../../SMOKE_TEST.md)。
+
 ## 简介
 
 Bronkhorst EL-FLOW Prestige 质量流量控制器（MFC）驱动，支持读取流量/温度、设置设定值与用户标签。
