@@ -1,18 +1,18 @@
 """
-Electrolytic Cell Gripper Workstation Driver (电解池夹爪工作站)
-Combines 2x QYL stepper motors + 1x DH PGE gripper into a single device
-with two high-level actions: pick_sample and place_sample.
+电解池夹爪工作站驱动
 
-All three physical devices share COM29 via RS-485 Modbus RTU.
-Motor 1 (slave_id=1), Motor 2 (slave_id=2), Gripper (slave_id=5).
+整合 2 台俏优灵步进电机 + 1 台大寰 PGE 平行电爪，对外提供 pick_sample / place_sample 高层动作。
 
-Communication: 115200, 8N1
-Motor: FC 03/06/10, speed/accel = register raw value (5000 in debug software = reg 5000)
-Gripper: FC 03/06
+三台设备共用 RS485 Modbus RTU（默认 COM29）：
+  - 电机 1（从站 1）：水平滑台
+  - 电机 2（从站 2）：垂直滑台
+  - 夹爪（从站 5）：大寰 PGE
 
-v7: Self-contained driver with lazy serial initialization.
-    Serial port is opened on first use (not only in initialize()),
-    so it works regardless of whether the framework calls initialize().
+通信：115200，8N1
+电机：功能码 03/06/10，速度/加速度为寄存器原始值（调试软件填 5000 即写 5000）
+夹爪：功能码 03/06
+
+v7：自包含驱动，支持延迟打开串口（首次动作时打开，不依赖框架是否调用 initialize）。
 """
 
 import logging
@@ -52,11 +52,11 @@ except ImportError:
 
 
 # ═══════════════════════════════════════════════════════════════════
-# CRC16 Modbus
+# Modbus CRC16
 # ═══════════════════════════════════════════════════════════════════
 
 def _crc16_modbus(data: bytes) -> bytes:
-    """Calculate Modbus RTU CRC16, returns 2 bytes (low, high)."""
+    """计算 Modbus RTU CRC16，返回 2 字节（低字节在前）。"""
     crc = 0xFFFF
     for byte in data:
         crc ^= byte
@@ -65,21 +65,21 @@ def _crc16_modbus(data: bytes) -> bytes:
                 crc = (crc >> 1) ^ 0xA001
             else:
                 crc >>= 1
-    return struct.pack("<H", crc)  # low byte first
+    return struct.pack("<H", crc)
 
 
 # ═══════════════════════════════════════════════════════════════════
-# Internal Modbus helpers
+# Modbus RTU 底层辅助
 # ═══════════════════════════════════════════════════════════════════
 
 class _ModbusRTU:
-    """Low-level Modbus RTU helper bound to a Serial port."""
+    """绑定串口的 Modbus RTU 底层通信辅助类。"""
 
     def __init__(self, ser: Serial, logger: logging.Logger):
         self._ser = ser
         self.logger = logger
 
-    # ── Frame builders ──────────────────────────────────────────
+    # ── 组帧 ──────────────────────────────────────────
 
     @staticmethod
     def _build_read_frame(slave_id: int, register: int, count: int = 1) -> bytes:
@@ -100,7 +100,7 @@ class _ModbusRTU:
             frame += struct.pack(">H", v & 0xFFFF)
         return frame + _crc16_modbus(frame)
 
-    # ── Send / Receive ──────────────────────────────────────────
+    # ── 收发 ──────────────────────────────────────────
 
     def send_and_receive(self, frame: bytes, expect_len: int) -> Optional[bytes]:
         if self._ser is None or not self._ser.is_open:
@@ -142,7 +142,7 @@ class _ModbusRTU:
         self.logger.warning("Could not locate valid response frame")
         return raw[:expect_len] if len(raw) >= expect_len else None
 
-    # ── High-level register operations ──────────────────────────
+    # ── 寄存器读写 ──────────────────────────────────────────
 
     def read_registers(self, slave_id: int, start: int, count: int = 1) -> Optional[list]:
         frame = self._build_read_frame(slave_id, start, count)
@@ -168,13 +168,14 @@ class _ModbusRTU:
 
 
 # ═══════════════════════════════════════════════════════════════════
-# Helper: signed 32-bit conversion
+# 有符号 32 位整数转换
 # ═══════════════════════════════════════════════════════════════════
 
 def _from_signed32(val: int) -> tuple:
     if val < 0:
         val += 0x100000000
     return ((val >> 16) & 0xFFFF, val & 0xFFFF)
+
 
 def _to_signed32(high: int, low: int) -> int:
     val = (high << 16) | low
@@ -184,7 +185,7 @@ def _to_signed32(high: int, low: int) -> int:
 
 
 # ═══════════════════════════════════════════════════════════════════
-# Motor register addresses
+# 电机寄存器地址（俏优灵）
 # ═══════════════════════════════════════════════════════════════════
 
 _M_STATUS       = 0x0000
@@ -193,21 +194,21 @@ _M_POS_L        = 0x0002
 _M_SPEED        = 0x0003
 _M_ESTOP        = 0x0004
 _M_ENABLE       = 0x0006
-_M_PP_TARGET_H  = 0x0010   # Point-to-point (absolute) mode
+_M_PP_TARGET_H  = 0x0010   # 点对点绝对定位模式
 _M_PP_TARGET_L  = 0x0011
 _M_PP_INIT_SPD  = 0x0012
 _M_PP_RUN_SPD   = 0x0013
 _M_PP_ACCEL     = 0x0014
 _M_PP_TOL       = 0x0015
 _M_HOME         = 0x001F
-_M_FW_STEPS_H   = 0x0040   # Forward (relative) mode
+_M_FW_STEPS_H   = 0x0040   # 相对定位（正向）模式
 _M_FW_STEPS_L   = 0x0041
 _M_FW_INIT_SPD  = 0x0042
 _M_FW_RUN_SPD   = 0x0043
 _M_FW_ACCEL     = 0x0044
 _M_FW_TOL       = 0x0045
 
-# Gripper register addresses
+# 夹爪寄存器地址（大寰 PGE）
 _G_INIT         = 0x0100
 _G_FORCE        = 0x0101
 _G_TARGET_POS   = 0x0103
@@ -216,43 +217,43 @@ _G_INIT_STATE   = 0x0200
 _G_GRIP_STATE   = 0x0201
 _G_ACTUAL_POS   = 0x0202
 
-# Motor status map
+# 电机状态码映射
 _MOTOR_STATUS = {0: "Idle", 1: "Busy", 2: "Stopped", 3: "LimitPos", 4: "LimitNeg"}
 
 
 # ═══════════════════════════════════════════════════════════════════
-# Main workstation class
+# 工作站主类
 # ═══════════════════════════════════════════════════════════════════
 
 @device(
     id="electrolytic_cell_gripper",
     category=["custom", "electrolytic_cell_gripper"],
-    description="电解池夹爪工作站",
+    description="电解池夹爪工作站（俏优灵电机 + 大寰 PGE 夹爪）",
     display_name="电解池夹爪",
 )
 class ElectrolyticCellGripper:
     """
-    Electrolytic Cell Gripper Workstation (电解池夹爪).
+    电解池夹爪工作站。
 
-    Combines:
-      - Motor 1 (slave_id=1): Horizontal slide
-      - Motor 2 (slave_id=2): Vertical slide
-      - Gripper  (slave_id=5): DH PGE parallel gripper
+    组成：
+      - 电机 1（从站 1）：俏优灵水平滑台
+      - 电机 2（从站 2）：俏优灵垂直滑台
+      - 夹爪（从站 5）：大寰 PGE 平行电爪
 
-    Exposes two high-level actions:
-      - pick_sample(): Grab a sample from the cell
-      - place_sample(): Put the sample back
+    对外动作分两类：
+      - 工艺动作：pick_sample / place_sample（完整夹取/放置序列）
+      - 手动动作：move_motor_mm / move_motor_steps 等（单轴或夹爪调试）
 
-    All motion parameters are hardcoded per the validated workflow.
+    pick/place 中的运动步数按现场工艺硬编码；手动动作由实验人员指定步数或 mm。
     """
 
     _ros_node: "BaseROS2DeviceNode"
 
-    # Motor speed/accel: user confirmed 5000 = register raw value in debug software
-    MOTOR_SPEED     = 5000   # register raw value
-    MOTOR_ACCEL     = 5000   # register raw value (acceleration time)
-    MOTOR_INIT_SPD  = 50     # initial speed register raw value
-    MOTOR_TOL       = 100    # tolerance in steps
+    # 电机速度/加速度：调试软件中 5000 对应寄存器原始值 5000
+    MOTOR_SPEED     = 5000   # 运行速度寄存器值
+    MOTOR_ACCEL     = 5000   # 加速度寄存器值
+    MOTOR_INIT_SPD  = 50     # 初始速度寄存器值
+    MOTOR_TOL       = 100    # 定位容差（步）
 
     def __init__(self, device_id: str = None, config: Dict[str, Any] = None, **kwargs):
         if device_id is None and "id" in kwargs:
@@ -264,7 +265,7 @@ class ElectrolyticCellGripper:
         self.config = config or {}
         self.logger = logging.getLogger(f"ECG.{self.device_id}")
 
-        # ── Config ──────────────────────────────────────────────
+        # ── 配置 ──────────────────────────────────────────────
         self._port_name: str = self.config.get("port", "COM29")
         self._baudrate: int = int(self.config.get("baudrate", 115200))
         self._timeout: float = float(self.config.get("timeout", 0.5))
@@ -272,16 +273,23 @@ class ElectrolyticCellGripper:
         self._motor1_id: int = int(self.config.get("motor1_slave_id", 1))
         self._motor2_id: int = int(self.config.get("motor2_slave_id", 2))
         self._gripper_id: int = int(self.config.get("gripper_slave_id", 5))
+        self._motor1_steps_per_mm: Optional[float] = self.config.get("motor1_steps_per_mm")
+        self._motor2_steps_per_mm: Optional[float] = self.config.get("motor2_steps_per_mm")
+        if self._motor1_steps_per_mm is not None:
+            self._motor1_steps_per_mm = float(self._motor1_steps_per_mm)
+        if self._motor2_steps_per_mm is not None:
+            self._motor2_steps_per_mm = float(self._motor2_steps_per_mm)
 
         self._ser: Optional[Serial] = None
         self._bus: Optional[_ModbusRTU] = None
 
-        # ── Data store ──────────────────────────────────────────
+        # ── 状态数据 ──────────────────────────────────────────
         self.data: Dict[str, Any] = {
             "status": "Idle",
+            "last_error": "",
         }
 
-    # ── Framework hooks ─────────────────────────────────────────
+    # ── 框架回调 ─────────────────────────────────────────
 
     async def _sleep(self, seconds: float):
         if getattr(self, "_ros_node", None) is not None:
@@ -295,10 +303,10 @@ class ElectrolyticCellGripper:
 
     def _ensure_serial(self) -> bool:
         """
-        Lazy serial initialization.
-        If serial is already open, return True.
-        If not, try to open it now. This ensures the serial port is available
-        regardless of whether the framework called initialize() or not.
+        延迟打开串口。
+
+        若串口已打开则直接返回 True；否则尝试立即打开，
+        以便框架未调用 initialize() 时仍能执行动作。
         """
         if self._bus is not None and self._ser is not None and self._ser.is_open:
             return True
@@ -332,7 +340,7 @@ class ElectrolyticCellGripper:
 
     @action()
     async def initialize(self) -> bool:
-        """Open serial port and verify communication."""
+        """打开串口并建立通信。"""
         self.logger.info("initialize() called")
         ok = self._ensure_serial()
         if ok:
@@ -345,7 +353,7 @@ class ElectrolyticCellGripper:
 
     @action()
     async def cleanup(self) -> bool:
-        """Close serial port."""
+        """关闭串口。"""
         if self._ser and self._ser.is_open:
             self._ser.close()
         self._ser = None
@@ -353,27 +361,28 @@ class ElectrolyticCellGripper:
         self.data["status"] = "Offline"
         return True
 
-    # ── Properties ──────────────────────────────────────────────
+    # ── 状态属性 ──────────────────────────────────────────────
 
     @property
     @topic_config()
     def status(self) -> str:
         return self.data.get("status", "Idle")
 
-    # ── Internal motor helpers ──────────────────────────────────
+    # ── 电机内部方法 ──────────────────────────────────
 
     def _motor_set_position_zero(self, slave_id: int) -> bool:
-        """Write 0 to actual position registers (set current position as zero)."""
+        """将当前实际位置寄存器写 0（把当前位置设为零点）。"""
         return self._bus.write_multiple(slave_id, _M_POS_H, [0, 0])
 
     def _motor_move_absolute(self, slave_id: int, position: int,
                               speed: int = None, accel: int = None) -> bool:
         """
-        Move motor to absolute position using point-to-point mode.
+        点对点模式绝对定位。
+
         Args:
-            position: target in steps (signed 32-bit)
-            speed: register raw value (default: MOTOR_SPEED=5000)
-            accel: register raw value (default: MOTOR_ACCEL=5000)
+            position: 目标位置（步，有符号 32 位）
+            speed: 运行速度寄存器值（默认 MOTOR_SPEED=5000）
+            accel: 加速度寄存器值（默认 MOTOR_ACCEL=5000）
         """
         spd = speed if speed is not None else self.MOTOR_SPEED
         acc = accel if accel is not None else self.MOTOR_ACCEL
@@ -382,7 +391,7 @@ class ElectrolyticCellGripper:
         return self._bus.write_multiple(slave_id, _M_PP_TARGET_H, values)
 
     def _motor_read_status(self, slave_id: int) -> Optional[Dict]:
-        """Read motor status, position, speed."""
+        """读取电机状态、位置、速度。"""
         regs = self._bus.read_registers(slave_id, _M_STATUS, 4)
         if regs is None or len(regs) < 4:
             return None
@@ -394,19 +403,19 @@ class ElectrolyticCellGripper:
         }
 
     def _motor_emergency_stop(self, slave_id: int) -> bool:
-        """Send emergency stop to motor."""
+        """发送电机急停。"""
         return self._bus.write_single(slave_id, _M_ESTOP, 0x0001)
 
     async def _motor_wait_idle(self, slave_id: int, timeout: float = 120.0,
                                 poll_interval: float = 0.3) -> bool:
-        """Wait until motor status returns to Idle (0) or non-running state."""
+        """轮询直到电机退出 Busy（状态码 1）。"""
         elapsed = 0.0
         motor_name = f"Motor{slave_id}"
         while elapsed < timeout:
             info = self._motor_read_status(slave_id)
             if info is not None:
                 code = info["status_code"]
-                if code != 1:  # Not "Busy"
+                if code != 1:  # 非运行中
                     self.logger.info(f"{motor_name} idle: pos={info['position']}, status={info['status']}")
                     return True
             await self._sleep(poll_interval)
@@ -414,14 +423,14 @@ class ElectrolyticCellGripper:
         self.logger.warning(f"{motor_name} wait_idle timed out after {timeout}s")
         return False
 
-    # ── Internal gripper helpers ────────────────────────────────
+    # ── 夹爪内部方法 ────────────────────────────────
 
     def _gripper_init(self) -> bool:
-        """Send homing command (0x01) to gripper."""
+        """发送夹爪回零/初始化命令（0x01）。"""
         return self._bus.write_single(self._gripper_id, _G_INIT, 0x01)
 
     async def _gripper_wait_init(self, timeout: float = 30.0) -> bool:
-        """Wait for gripper initialization to complete."""
+        """等待夹爪初始化完成。"""
         elapsed = 0.0
         while elapsed < timeout:
             regs = self._bus.read_registers(self._gripper_id, _G_INIT_STATE, 1)
@@ -442,12 +451,12 @@ class ElectrolyticCellGripper:
         return self._bus.write_single(self._gripper_id, _G_SPEED, speed)
 
     def _gripper_set_position(self, position: int) -> bool:
-        """Set gripper target position. 0=fully closed, 1000=fully open."""
+        """设置夹爪目标位置。0=全闭，1000=全开。"""
         position = max(0, min(1000, position))
         return self._bus.write_single(self._gripper_id, _G_TARGET_POS, position)
 
     async def _gripper_wait_done(self, timeout: float = 15.0) -> bool:
-        """Wait for gripper to finish moving (grip_state != 0)."""
+        """等待夹爪动作完成（grip_state 为 1/2/3）。"""
         elapsed = 0.0
         while elapsed < timeout:
             regs = self._bus.read_registers(self._gripper_id, _G_GRIP_STATE, 1)
@@ -460,8 +469,129 @@ class ElectrolyticCellGripper:
         self.logger.warning("Gripper wait timed out")
         return False
 
+    def _motor_slave_id(self, motor: int) -> Optional[int]:
+        """motor: 1=水平, 2=垂直"""
+        if motor == 1:
+            return self._motor1_id
+        if motor == 2:
+            return self._motor2_id
+        self.logger.error(f"无效电机编号: {motor}（仅支持 1=水平, 2=垂直）")
+        return None
+
+    def _steps_per_mm(self, motor: int) -> Optional[float]:
+        return self._motor1_steps_per_mm if motor == 1 else self._motor2_steps_per_mm
+
     # ═══════════════════════════════════════════════════════════════
-    #  ACTION 1: 夹取样品 (Pick Sample)
+    #  实验人员手动动作（单轴 / 夹爪）
+    # ═══════════════════════════════════════════════════════════════
+
+    @action(description="单轴绝对定位（步）")
+    async def move_motor_steps(
+        self,
+        motor: int,
+        steps: int,
+        wait: bool = True,
+        speed: int = None,
+        accel: int = None,
+    ) -> bool:
+        """移动指定电机到绝对位置（步）。
+
+        Args:
+            motor[电机]: 1=水平, 2=垂直
+            steps[步数]: 目标位置（有符号整数）
+            wait[等待]: 是否等待到位，默认 True
+            speed[速度]: 可选，运行速度寄存器值
+            accel[加速度]: 可选，加速度寄存器值
+        """
+        if not self._ensure_serial():
+            self.data["status"] = "Error"
+            return False
+
+        slave_id = self._motor_slave_id(motor)
+        if slave_id is None:
+            return False
+
+        self.data["status"] = "Busy"
+        ok = self._motor_move_absolute(slave_id, int(steps), speed=speed, accel=accel)
+        if ok and wait:
+            ok = await self._motor_wait_idle(slave_id, timeout=120.0)
+        self.data["status"] = "Idle" if ok else "Error"
+        return ok
+
+    @action(description="单轴绝对定位（mm）")
+    async def move_motor_mm(
+        self,
+        motor: int,
+        mm: float,
+        wait: bool = True,
+        speed: int = None,
+        accel: int = None,
+    ) -> bool:
+        """移动指定电机到绝对位置（mm）。
+
+        需在 config 中配置 motor1_steps_per_mm / motor2_steps_per_mm（现场标定）。
+        """
+        steps_per_mm = self._steps_per_mm(motor)
+        if not steps_per_mm or steps_per_mm <= 0:
+            self.logger.error(
+                f"电机 {motor} 未配置 steps_per_mm，请在 graph config 中设置 motor{motor}_steps_per_mm"
+            )
+            self.data["last_error"] = f"motor{motor}_steps_per_mm not configured"
+            return False
+
+        steps = int(round(mm * steps_per_mm))
+        self.logger.info(f"电机 {motor}: {mm} mm -> {steps} 步 (×{steps_per_mm}/mm)")
+        return await self.move_motor_steps(motor, steps, wait=wait, speed=speed, accel=accel)
+
+    @action(description="读取电机当前位置（步）")
+    async def read_motor_position(self, motor: int) -> int:
+        """读取电机当前位置（步）。失败时返回 0。"""
+        if not self._ensure_serial():
+            return 0
+
+        slave_id = self._motor_slave_id(motor)
+        if slave_id is None:
+            return 0
+
+        info = self._motor_read_status(slave_id)
+        if info is None:
+            return 0
+        return int(info["position"])
+
+    @action(description="将电机当前位置设为零点")
+    async def motor_set_zero(self, motor: int) -> bool:
+        """把指定电机当前位置写入为零点。"""
+        if not self._ensure_serial():
+            return False
+
+        slave_id = self._motor_slave_id(motor)
+        if slave_id is None:
+            return False
+
+        return self._motor_set_position_zero(slave_id)
+
+    @action(description="夹爪张开")
+    async def gripper_open(self, wait: bool = True) -> bool:
+        """夹爪全开（位置 1000）。"""
+        if not self._ensure_serial():
+            return False
+        self._gripper_set_position(1000)
+        if wait:
+            return await self._gripper_wait_done(timeout=15.0)
+        return True
+
+    @action(description="夹爪闭合")
+    async def gripper_close(self, wait: bool = True) -> bool:
+        """夹爪全闭（位置 0）。"""
+        if not self._ensure_serial():
+            return False
+        self._gripper_set_position(0)
+        if wait:
+            return await self._gripper_wait_done(timeout=15.0)
+        return True
+
+    # ═══════════════════════════════════════════════════════════════
+    #  动作 1：夹取样品（工艺序列）
     # ═══════════════════════════════════════════════════════════════
 
     @action()
@@ -479,7 +609,7 @@ class ElectrolyticCellGripper:
           9. 1号电机移动到 0 步
          10. 2号电机移动到 -630000 步
         """
-        # ── Lazy serial open ────────────────────────────────────
+        # 延迟打开串口
         if not self._ensure_serial():
             self.logger.error("pick_sample ABORTED: cannot open serial port")
             self.data["status"] = "Error"
@@ -491,57 +621,57 @@ class ElectrolyticCellGripper:
         self.logger.info("=" * 60)
 
         try:
-            # Step 1: Gripper init (homing)
-            self.logger.info("[1/11] Gripper init (homing)...")
+            # 步骤 1：夹爪回零
+            self.logger.info("[1/10] Gripper init (homing)...")
             self._gripper_init()
             await self._gripper_wait_init(timeout=30.0)
 
-            # Step 2: Set gripper force 50%
-            self.logger.info("[2/11] Set gripper force = 50%")
+            # 步骤 2：夹爪力 50%
+            self.logger.info("[2/10] Set gripper force = 50%")
             self._gripper_set_force(50)
             time_module.sleep(0.05)
 
-            # Step 3: Set gripper speed 100%
-            self.logger.info("[3/11] Set gripper speed = 100%")
+            # 步骤 3：夹爪速度 100%
+            self.logger.info("[3/10] Set gripper speed = 100%")
             self._gripper_set_speed(100)
             time_module.sleep(0.05)
 
-            # Step 4: Both motors set current position as zero
-            self.logger.info("[4/11] Motor1 + Motor2 set position zero")
+            # 步骤 4：两轴当前位置设为零点
+            self.logger.info("[4/10] Motor1 + Motor2 set position zero")
             self._motor_set_position_zero(self._motor1_id)
             time_module.sleep(0.05)
             self._motor_set_position_zero(self._motor2_id)
             time_module.sleep(0.05)
 
-            # Step 5: Motor 1 move to 838000
-            self.logger.info("[5/11] Motor1 move to 838000 steps (speed=5000, accel=5000)")
+            # 步骤 5：水平轴到 838000 步
+            self.logger.info("[5/10] Motor1 move to 838000 steps (speed=5000, accel=5000)")
             self._motor_move_absolute(self._motor1_id, 838000, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor1_id, timeout=120.0)
 
-            # Step 6: Motor 2 move to -800000
-            self.logger.info("[6/11] Motor2 move to -800000 steps")
+            # 步骤 6：垂直轴到 -800000 步
+            self.logger.info("[6/10] Motor2 move to -800000 steps")
             self._motor_move_absolute(self._motor2_id, -800000, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor2_id, timeout=120.0)
 
-            # Step 7: Gripper close (position=0)
-            self.logger.info("[7/11] Gripper close")
+            # 步骤 7：夹爪闭合（位置 0）
+            self.logger.info("[7/10] Gripper close")
             self._gripper_set_position(0)
             await self._gripper_wait_done(timeout=15.0)
 
-            # Step 8: Motor 2 move to 0
-            self.logger.info("[8/11] Motor2 move to 0 steps")
+            # 步骤 8：垂直轴回 0
+            self.logger.info("[8/10] Motor2 move to 0 steps")
             self._motor_move_absolute(self._motor2_id, 0, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor2_id, timeout=120.0)
 
-            # Step 9: Motor 1 move to 0
-            self.logger.info("[9/11] Motor1 move to 0 steps")
+            # 步骤 9：水平轴回 0
+            self.logger.info("[9/10] Motor1 move to 0 steps")
             self._motor_move_absolute(self._motor1_id, 0, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor1_id, timeout=120.0)
 
-            # Step 10: Motor 2 move to -850000
-            # self.logger.info("[10/11] Motor2 move to -850000 steps")
+            # 步骤 10：垂直轴到待机位 -630000（旧值 -850000 已弃用）
+            # self.logger.info("[10/10] Motor2 move to -850000 steps")
             # self._motor_move_absolute(self._motor2_id, -850000, speed=5000, accel=5000)
-            self.logger.info("[10/11] Motor2 move to -630000 steps")
+            self.logger.info("[10/10] Motor2 move to -630000 steps")
             self._motor_move_absolute(self._motor2_id, -630000, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor2_id, timeout=120.0)
 
@@ -555,7 +685,7 @@ class ElectrolyticCellGripper:
             self.data["status"] = "Error"
 
     # ═══════════════════════════════════════════════════════════════
-    #  ACTION 2: 放下样品 (Place Sample)
+    #  动作 2：放下样品（工艺序列）
     # ═══════════════════════════════════════════════════════════════
 
     @action()
@@ -569,7 +699,7 @@ class ElectrolyticCellGripper:
           5. 2号电机移动到 0 步
           6. 1号电机移动到 0 步
         """
-        # ── Lazy serial open ────────────────────────────────────
+        # 延迟打开串口
         if not self._ensure_serial():
             self.logger.error("place_sample ABORTED: cannot open serial port")
             self.data["status"] = "Error"
@@ -581,32 +711,32 @@ class ElectrolyticCellGripper:
         self.logger.info("=" * 60)
 
         try:
-            # Step 1: Motor 2 move to 0
+            # 步骤 1：垂直轴到 0
             self.logger.info("[1/6] Motor2 move to 0 steps")
             self._motor_move_absolute(self._motor2_id, 0, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor2_id, timeout=120.0)
 
-            # Step 2: Motor 1 move to 838000
+            # 步骤 2：水平轴到 838000 步
             self.logger.info("[2/6] Motor1 move to 838000 steps")
             self._motor_move_absolute(self._motor1_id, 838000, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor1_id, timeout=120.0)
 
-            # Step 3: Motor 2 move to -790000
+            # 步骤 3：垂直轴下探 -790000 步
             self.logger.info("[3/6] Motor2 move to -790000 steps")
             self._motor_move_absolute(self._motor2_id, -790000, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor2_id, timeout=120.0)
 
-            # Step 4: Gripper open (position=1000)
+            # 步骤 4：夹爪张开（位置 1000）
             self.logger.info("[4/6] Gripper open")
             self._gripper_set_position(1000)
             await self._gripper_wait_done(timeout=15.0)
 
-            # Step 5: Motor 2 move to 0
+            # 步骤 5：垂直轴回 0
             self.logger.info("[5/6] Motor2 move to 0 steps")
             self._motor_move_absolute(self._motor2_id, 0, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor2_id, timeout=120.0)
 
-            # Step 6: Motor 1 move to 0
+            # 步骤 6：水平轴回 0
             self.logger.info("[6/6] Motor1 move to 0 steps")
             self._motor_move_absolute(self._motor1_id, 0, speed=5000, accel=5000)
             await self._motor_wait_idle(self._motor1_id, timeout=120.0)
@@ -621,12 +751,12 @@ class ElectrolyticCellGripper:
             self.data["status"] = "Error"
 
     # ═══════════════════════════════════════════════════════════════
-    #  Emergency stop
+    #  急停
     # ═══════════════════════════════════════════════════════════════
 
     @action()
     async def emergency_stop(self):
-        """Emergency stop all motors immediately."""
+        """立即停止所有电机（夹爪不动作）。"""
         self.logger.warning("EMERGENCY STOP")
         if self._bus is not None:
             self._motor_emergency_stop(self._motor1_id)

@@ -158,7 +158,7 @@ electrolytic_cell_gripper:
       status: str
     type: python
   config_info: []
-  description: ''
+  description: 电解池夹爪工作站（2×俏优灵步进电机 + 大寰 PGE 平行电爪，RS485 Modbus RTU）
   handles: []
   icon: ''
   init_param_schema:
