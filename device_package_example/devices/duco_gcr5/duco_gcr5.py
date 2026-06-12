@@ -56,7 +56,7 @@ except ImportError:
     display_name="DUCO 协作机器人"
 )
 class DucoGCR5:
-    """新松 DUCO GCR5-910 协作机器人驱动（TCP 2000 文本协议版）"""
+    """多可 DUCO GCR5-910 协作机器人驱动（中科新松 / 新松智能机器人子品牌，TCP 2000 文本协议）"""
 
     _ros_node: "BaseROS2DeviceNode"
 

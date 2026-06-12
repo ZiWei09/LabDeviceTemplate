@@ -330,7 +330,7 @@ duco_gcr5:
       tcp_pose: String
     type: python
   config_info: []
-  description: 新松 DUCO GCR5-910 协作机器人（TCP 2000 端口文本协议）
+  description: 多可 DUCO GCR5-910 协作机器人（中科新松 / 新松智能机器人子品牌，TCP 2000 文本协议）
   handles: []
   icon: ''
   id: duco_gcr5
