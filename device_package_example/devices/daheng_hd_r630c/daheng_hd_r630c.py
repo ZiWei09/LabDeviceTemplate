@@ -39,14 +39,15 @@ except ImportError:
 @device(
     id="daheng_hd_r630c",
     category=["sensor", "daheng_hd_r630c"],
-    description="度申 HD-R630C USB3 工业相机",
+    description="大恒图像 HD-R630C-U3 USB3 工业相机",
     display_name="HD-R630C 工业相机",
 )
 class DahengHdR630c:
-    """度申 DO3THINK M3S630-H-O2C (HD-R630C-U3) USB3 Vision 彩色工业相机驱动。
+    """大恒图像 HD-R630C-U3 USB3 Vision 彩色工业相机驱动。
 
     通过 Harvesters (GenICam/GenTL) 通用接口与相机通信，支持单帧采集、
     连续采集、曝光时间和增益设置等功能。
+    本实验室 GenTL 使用度申 DVP SDK（`DVPCameraTL64.cti`）。
 
     依赖：
         - harvesters: pip install harvesters

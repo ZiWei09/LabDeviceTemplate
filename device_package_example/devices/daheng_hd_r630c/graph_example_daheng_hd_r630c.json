@@ -2,7 +2,7 @@
   "nodes": [
     {
       "id": "daheng_camera_1",
-      "name": "度申 M3S630-H-O2C 工业相机",
+      "name": "大恒 HD-R630C-U3 工业相机",
       "children": [],
       "parent": null,
       "type": "device",

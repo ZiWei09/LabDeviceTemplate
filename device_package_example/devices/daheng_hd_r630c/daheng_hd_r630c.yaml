@@ -297,7 +297,7 @@ daheng_hd_r630c:
       status: str
     type: python
   config_info: []
-  description: 度申 DO3THINK M3S630-H-O2C (HD-R630C-U3) USB3 Vision 彩色工业相机
+  description: 大恒图像 HD-R630C-U3 USB3 Vision 彩色工业相机（GenICam / USB3 Vision）
   handles: []
   icon: ''
   init_param_schema:
