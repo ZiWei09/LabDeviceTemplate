@@ -1,8 +1,2 @@
-rich
-pyserial
-pymodbus
-numpy
-harvesters
-opencv-python-headless
-pillow
-propar
+# 设备包依赖见 CosLab_SHU_Device_package/requirements.txt（与 --devices 路径一致）
+-r CosLab_SHU_Device_package/requirements.txt
