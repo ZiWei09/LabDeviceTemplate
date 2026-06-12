@@ -2,7 +2,7 @@
 
 ## 简介
 
-大恒图像 **HD-R630C-U3** USB3.0 彩色工业相机驱动，基于 Harvesters + GenICam（USB3 Vision）接口。
+实验室设备铭牌为 **大恒 HD-R630C-U3** USB3.0 彩色工业相机；据现场开发人员说明，该机本质为度申科技生产、大恒光电贴牌销售，**接入时使用度申 DVP 开发包**（GenTL）。本驱动基于 Harvesters + GenICam（USB3 Vision）接口，默认加载度申 `DVPCameraTL64.cti`。
 
 ## 设备 ID
 
@@ -46,14 +46,15 @@
 
 ## 注意事项
 
-- 需安装相机 SDK 及 GenTL `.cti` 文件（本实验室使用度申 DVP GenTL）
-- 默认路径为 Windows，Linux/macOS 需修改 `cti_path`
+- 需安装**度申 DVP SDK** 及 GenTL `.cti` 文件（非大恒 Galaxy SDK）
+- 贴牌关系：销售型号为大恒 HD-R630C-U3，底层与度申同平台相机一致，故沿用度申开发包接入
+- 默认 `cti_path` 为 Windows，Linux/macOS 需按实际安装路径修改
 
 ## 产品资料
 
 ### 产品简介
 
-**HD-R630C-U3** 为大恒图像（Daheng Imaging）6.3 MP USB3.0 彩色工业面阵相机，体积 29 mm 立方，适用于机器视觉与实验室成像。与同平台度申 M3ST630-H-O2C 规格相近，本驱动通过 GenICam 接口控制，与具体销售品牌无关。
+**HD-R630C-U3** 为大恒光电贴牌销售的 6.3 MP USB3.0 彩色工业面阵相机；现场接入确认其由**度申科技**生产，与同平台度申 M3ST630-H-O2C 规格相近。本驱动通过 Harvesters + 度申 GenTL 控制，设备 ID 保留 `daheng_hd_r630c` 以对应实验室铭牌与 graph 配置。
 
 ### 产品特点
 
@@ -66,8 +67,8 @@
 
 | 项目 | 参数 |
 |---|---|
-| 型号 | HD-R630C-U3 |
-| 生产厂家 | 大恒图像（Daheng Imaging） |
+| 销售型号 | HD-R630C-U3（大恒光电贴牌） |
+| 生产厂家 | 度申科技（Do3think）；大恒光电贴牌销售 |
 | 分辨率 | 3072 × 2048 |
 | 靶面 | 1/1.8" |
 | 快门类型 | 卷帘快门 |
@@ -97,4 +98,4 @@
 - [度申 M3ST630-H-O2C（同平台参考）](https://en.do3think.com/product/m3st630-h-o2c-area-scan-camera)
 - [度申 M3ST 系列概览](https://www.do3think.com/M3S/)
 
-> 说明：本实验室驱动使用 Harvesters + 度申 GenTL（`DVPCameraTL64.cti`）。若使用大恒官方 SDK，需相应调整 `cti_path`。
+> 说明：本实验室按开发人员原始接入方式，使用 Harvesters + **度申 DVP GenTL**（`DVPCameraTL64.cti`），与大恒贴牌、度申代工的关系一致，无需改用大恒 Galaxy SDK。

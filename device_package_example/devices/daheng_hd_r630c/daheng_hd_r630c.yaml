@@ -297,7 +297,7 @@ daheng_hd_r630c:
       status: str
     type: python
   config_info: []
-  description: 大恒图像 HD-R630C-U3 USB3 Vision 彩色工业相机（GenICam / USB3 Vision）
+  description: 大恒贴牌 HD-R630C-U3（度申代工，Harvesters + 度申 DVP GenTL）
   handles: []
   icon: ''
   init_param_schema:
