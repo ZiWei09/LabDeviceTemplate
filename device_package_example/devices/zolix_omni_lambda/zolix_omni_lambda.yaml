@@ -1,8 +1,7 @@
-duco_gcr5:
-  action_value_mappings: {}
+zolix_omni_lambda:
   category:
-  - robot_arm
-  - duco_gcr5
+  - custom
+  - zolix_omni_lambda
   class:
     action_value_mappings:
       auto-cleanup:
@@ -26,7 +25,7 @@ duco_gcr5:
           title: cleanup参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-clear_error:
+      auto-grating_home:
         feedback: {}
         goal: {}
         goal_default: {}
@@ -44,49 +43,7 @@ duco_gcr5:
             result: {}
           required:
           - goal
-          title: clear_error参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-disable:
-        feedback: {}
-        goal: {}
-        goal_default: {}
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties: {}
-              required: []
-              type: object
-            result: {}
-          required:
-          - goal
-          title: disable参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-enable:
-        feedback: {}
-        goal: {}
-        goal_default: {}
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties: {}
-              required: []
-              type: object
-            result: {}
-          required:
-          - goal
-          title: enable参数
+          title: grating_home参数
           type: object
         type: UniLabJsonCommandAsync
       auto-initialize:
@@ -110,10 +67,11 @@ duco_gcr5:
           title: initialize参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-pause:
+      auto-move_relative:
         feedback: {}
         goal: {}
-        goal_default: {}
+        goal_default:
+          wavelength: null
         handles: {}
         placeholder_keys: {}
         result: {}
@@ -122,13 +80,66 @@ duco_gcr5:
           properties:
             feedback: {}
             goal:
-              properties: {}
-              required: []
+              properties:
+                wavelength:
+                  type: number
+              required:
+              - wavelength
               type: object
             result: {}
           required:
           - goal
-          title: pause参数
+          title: move_relative参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-move_to:
+        feedback: {}
+        goal: {}
+        goal_default:
+          wavelength: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                wavelength:
+                  type: number
+              required:
+              - wavelength
+              type: object
+            result: {}
+          required:
+          - goal
+          title: move_to参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-move_to_wavenumber:
+        feedback: {}
+        goal: {}
+        goal_default:
+          wavenumber: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                wavenumber:
+                  type: number
+              required:
+              - wavenumber
+              type: object
+            result: {}
+          required:
+          - goal
+          title: move_to_wavenumber参数
           type: object
         type: UniLabJsonCommandAsync
       auto-post_init:
@@ -156,7 +167,7 @@ duco_gcr5:
           title: post_init参数
           type: object
         type: UniLabJsonCommand
-      auto-power_off:
+      auto-query_gratings:
         feedback: {}
         goal: {}
         goal_default: {}
@@ -174,10 +185,10 @@ duco_gcr5:
             result: {}
           required:
           - goal
-          title: power_off参数
+          title: query_gratings参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-power_on:
+      auto-query_position:
         feedback: {}
         goal: {}
         goal_default: {}
@@ -195,10 +206,10 @@ duco_gcr5:
             result: {}
           required:
           - goal
-          title: power_on参数
+          title: query_position参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-query_state:
+      auto-query_system_info:
         feedback: {}
         goal: {}
         goal_default: {}
@@ -216,36 +227,14 @@ duco_gcr5:
             result: {}
           required:
           - goal
-          title: query_state参数
+          title: query_system_info参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-resume:
-        feedback: {}
-        goal: {}
-        goal_default: {}
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties: {}
-              required: []
-              type: object
-            result: {}
-          required:
-          - goal
-          title: resume参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-run_program:
+      auto-send_command:
         feedback: {}
         goal: {}
         goal_default:
-          name: null
-          speed: 0.0
+          command: null
         handles: {}
         placeholder_keys: {}
         result: {}
@@ -255,25 +244,22 @@ duco_gcr5:
             feedback: {}
             goal:
               properties:
-                name:
+                command:
                   type: string
-                speed:
-                  default: 0.0
-                  type: number
               required:
-              - name
+              - command
               type: object
             result: {}
           required:
           - goal
-          title: run_program参数
+          title: send_command参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-set_speed:
+      auto-set_entrance_port:
         feedback: {}
         goal: {}
         goal_default:
-          speed: null
+          port: null
         handles: {}
         placeholder_keys: {}
         result: {}
@@ -283,15 +269,115 @@ duco_gcr5:
             feedback: {}
             goal:
               properties:
-                speed:
-                  type: number
+                port:
+                  type: string
               required:
-              - speed
+              - port
               type: object
             result: {}
           required:
           - goal
-          title: set_speed参数
+          title: set_entrance_port参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-set_exit_port:
+        feedback: {}
+        goal: {}
+        goal_default:
+          port: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                port:
+                  type: string
+              required:
+              - port
+              type: object
+            result: {}
+          required:
+          - goal
+          title: set_exit_port参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-set_grating:
+        feedback: {}
+        goal: {}
+        goal_default:
+          grating: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                grating:
+                  type: string
+              required:
+              - grating
+              type: object
+            result: {}
+          required:
+          - goal
+          title: set_grating参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-set_port_output:
+        feedback: {}
+        goal: {}
+        goal_default:
+          value: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                value:
+                  type: string
+              required:
+              - value
+              type: object
+            result: {}
+          required:
+          - goal
+          title: set_port_output参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-set_turret:
+        feedback: {}
+        goal: {}
+        goal_default:
+          turret: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                turret:
+                  type: string
+              required:
+              - turret
+              type: object
+            result: {}
+          required:
+          - goal
+          title: set_turret参数
           type: object
         type: UniLabJsonCommandAsync
       auto-stop:
@@ -315,25 +401,21 @@ duco_gcr5:
           title: stop参数
           type: object
         type: UniLabJsonCommandAsync
-    module: device_package_example.devices.duco_gcr5.duco_gcr5:DucoGCR5
+    module: device_package_example.devices.zolix_omni_lambda.zolix_omni_lambda:ZolixOmniLambda
     status_types:
-      error_message: str
-      joint_torque: String
-      joint_velocity: String
-      operation_mode_name: str
-      position: String
-      program_state_name: str
-      robot_state_name: str
-      speed: float
+      entrance_port: str
+      exit_port: str
+      grating: str
       status: str
-      tcp_force: String
-      tcp_pose: String
+      system_info: str
+      turret: str
+      wavelength: float
+      wavenumber: float
     type: python
   config_info: []
-  description: 新松 DUCO GCR5-910 协作机器人（TCP 2000 端口文本协议）
+  description: Zolix Omni-λ 单色仪/光谱仪
   handles: []
   icon: ''
-  id: duco_gcr5
   init_param_schema:
     config:
       properties:
@@ -345,61 +427,30 @@ duco_gcr5:
       type: object
     data:
       properties:
-        error_message:
+        entrance_port:
           type: string
-        joint_torque:
-          items:
-            type: number
-          type: array
-        joint_velocity:
-          items:
-            type: number
-          type: array
-        operation_mode_name:
+        exit_port:
           type: string
-        position:
-          items:
-            type: number
-          type: array
-        program_state_name:
+        grating:
           type: string
-        robot_state_name:
-          type: string
-        speed:
-          type: number
         status:
           type: string
-        tcp_force:
-          items:
-            type: number
-          type: array
-        tcp_pose:
-          items:
-            type: number
-          type: array
+        system_info:
+          type: string
+        turret:
+          type: string
+        wavelength:
+          type: number
+        wavenumber:
+          type: number
       required:
       - status
-      - position
-      - tcp_pose
-      - joint_velocity
-      - joint_torque
-      - tcp_force
-      - speed
-      - robot_state_name
-      - program_state_name
-      - operation_mode_name
-      - error_message
+      - wavelength
+      - wavenumber
+      - grating
+      - turret
+      - exit_port
+      - entrance_port
+      - system_info
       type: object
-  status_types:
-    error_message: str
-    joint_torque: list
-    joint_velocity: list
-    operation_mode_name: str
-    position: list
-    program_state_name: str
-    robot_state_name: str
-    speed: float
-    status: str
-    tcp_force: list
-    tcp_pose: list
   version: 1.0.0

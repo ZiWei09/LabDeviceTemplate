@@ -1,6 +1,6 @@
-longer_bt100:
+cni_laser_msl_u_532:
   category:
-  - longer_bt100
+  - cni_laser_msl_u_532
   class:
     action_value_mappings:
       auto-cleanup:
@@ -22,6 +22,27 @@ longer_bt100:
           required:
           - goal
           title: cleanup参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-emergency_stop:
+        feedback: {}
+        goal: {}
+        goal_default: {}
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties: {}
+              required: []
+              type: object
+            result: {}
+          required:
+          - goal
+          title: emergency_stop参数
           type: object
         type: UniLabJsonCommandAsync
       auto-initialize:
@@ -70,7 +91,57 @@ longer_bt100:
           title: post_init参数
           type: object
         type: UniLabJsonCommand
-      auto-read_status:
+      auto-set_power:
+        feedback: {}
+        goal: {}
+        goal_default:
+          power: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                power:
+                  type: number
+              required:
+              - power
+              type: object
+            result: {}
+          required:
+          - goal
+          title: set_power参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-set_power_percentage:
+        feedback: {}
+        goal: {}
+        goal_default:
+          percentage: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                percentage:
+                  type: number
+              required:
+              - percentage
+              type: object
+            result: {}
+          required:
+          - goal
+          title: set_power_percentage参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-turn_off:
         feedback: {}
         goal: {}
         goal_default: {}
@@ -88,116 +159,10 @@ longer_bt100:
             result: {}
           required:
           - goal
-          title: read_status参数
+          title: turn_off参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-run_for_duration:
-        feedback: {}
-        goal: {}
-        goal_default:
-          direction: null
-          duration: null
-          speed: null
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties:
-                direction:
-                  type: string
-                duration:
-                  type: number
-                speed:
-                  type: number
-              required:
-              - duration
-              type: object
-            result: {}
-          required:
-          - goal
-          title: run_for_duration参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-set_direction:
-        feedback: {}
-        goal: {}
-        goal_default:
-          direction: null
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties:
-                direction:
-                  type: string
-              required:
-              - direction
-              type: object
-            result: {}
-          required:
-          - goal
-          title: set_direction参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-set_fullspeed:
-        feedback: {}
-        goal: {}
-        goal_default:
-          enable: null
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties:
-                enable:
-                  type: boolean
-              required:
-              - enable
-              type: object
-            result: {}
-          required:
-          - goal
-          title: set_fullspeed参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-set_speed:
-        feedback: {}
-        goal: {}
-        goal_default:
-          speed: null
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties:
-                speed:
-                  type: number
-              required:
-              - speed
-              type: object
-            result: {}
-          required:
-          - goal
-          title: set_speed参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-start:
+      auto-turn_on:
         feedback: {}
         goal: {}
         goal_default: {}
@@ -215,59 +180,18 @@ longer_bt100:
             result: {}
           required:
           - goal
-          title: start参数
+          title: turn_on参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-stop:
-        feedback: {}
-        goal: {}
-        goal_default: {}
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties: {}
-              required: []
-              type: object
-            result: {}
-          required:
-          - goal
-          title: stop参数
-          type: object
-        type: UniLabJsonCommandAsync
-    module: device_package_example.devices.longer_bt100.longer_bt100:LongerBT100
+    module: device_package_example.devices.cni_laser_msl_u_532.cni_laser_msl_u_532:CNILaserMSLU532
     status_types:
-      direction: str
-      is_fullspeed: bool
-      speed: float
+      laser_on: str
+      power: float
+      power_percentage: float
       status: str
+      wavelength: float
     type: python
   config_info: []
-  config_schema:
-    properties:
-      address:
-        default: 1
-        description: 设备地址，1-30 为单设备，31 为广播
-        maximum: 31
-        minimum: 1
-        type: integer
-      baudrate:
-        default: 1200
-        description: 波特率，固定 1200
-        type: integer
-      port:
-        default: COM4
-        description: 串口设备路径，如 COM4 或 /dev/ttyUSB0
-        type: string
-      serial_timeout:
-        default: 0.5
-        description: 串口读取超时（秒）
-        type: number
-    type: object
   description: ''
   handles: []
   icon: ''
@@ -282,18 +206,21 @@ longer_bt100:
       type: object
     data:
       properties:
-        direction:
+        laser_on:
           type: string
-        is_fullspeed:
-          type: boolean
-        speed:
+        power:
+          type: number
+        power_percentage:
           type: number
         status:
           type: string
+        wavelength:
+          type: number
       required:
       - status
-      - speed
-      - direction
-      - is_fullspeed
+      - laser_on
+      - power
+      - power_percentage
+      - wavelength
       type: object
   version: 1.0.0

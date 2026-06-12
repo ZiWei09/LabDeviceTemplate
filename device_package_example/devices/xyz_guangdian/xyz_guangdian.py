@@ -314,9 +314,9 @@ class XYZGuangdian:
         return self.data.get("push_rod_status", "released")
 
     @property
-    def error_code(self) -> int:
+    def error_code(self) -> float:
         """错误代码"""
-        return self.data.get("error_code", 0)
+        return float(self.data.get("error_code", 0))
 
     # ========== 动作方法 ==========
 

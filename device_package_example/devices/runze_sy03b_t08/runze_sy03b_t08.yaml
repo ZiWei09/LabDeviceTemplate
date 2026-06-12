@@ -1,6 +1,6 @@
 runze_sy03b_t08:
   class:
-    module: unilab_ext.devices.runze_sy03b_t08:RunzeSY03BT08
+    module: device_package_example.devices.runze_sy03b_t08.runze_sy03b_t08:RunzeSY03BT08
     type: python
   config_schema:
     type: object

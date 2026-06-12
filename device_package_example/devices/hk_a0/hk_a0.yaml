@@ -99,7 +99,7 @@ hk_a0:
           title: stop_all参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.custom.hk_a0:HKA0
+    module: device_package_example.devices.hk_a0.hk_a0:HKA0
     status_types:
       outputs: String
       status: str

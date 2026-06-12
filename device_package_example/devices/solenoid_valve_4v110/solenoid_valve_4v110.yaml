@@ -1,6 +1,7 @@
-longer_bt100:
+solenoid_valve_4v110:
   category:
-  - longer_bt100
+  - pump_and_valve
+  - solenoid_valve_4v110
   class:
     action_value_mappings:
       auto-cleanup:
@@ -24,6 +25,27 @@ longer_bt100:
           title: cleanup参数
           type: object
         type: UniLabJsonCommandAsync
+      auto-close:
+        feedback: {}
+        goal: {}
+        goal_default: {}
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties: {}
+              required: []
+              type: object
+            result: {}
+          required:
+          - goal
+          title: close参数
+          type: object
+        type: UniLabJsonCommandAsync
       auto-initialize:
         feedback: {}
         goal: {}
@@ -43,6 +65,69 @@ longer_bt100:
           required:
           - goal
           title: initialize参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-is_closed:
+        feedback: {}
+        goal: {}
+        goal_default: {}
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties: {}
+              required: []
+              type: object
+            result: {}
+          required:
+          - goal
+          title: is_closed参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-is_open:
+        feedback: {}
+        goal: {}
+        goal_default: {}
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties: {}
+              required: []
+              type: object
+            result: {}
+          required:
+          - goal
+          title: is_open参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-open:
+        feedback: {}
+        goal: {}
+        goal_default: {}
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties: {}
+              required: []
+              type: object
+            result: {}
+          required:
+          - goal
+          title: open参数
           type: object
         type: UniLabJsonCommandAsync
       auto-post_init:
@@ -70,34 +155,11 @@ longer_bt100:
           title: post_init参数
           type: object
         type: UniLabJsonCommand
-      auto-read_status:
-        feedback: {}
-        goal: {}
-        goal_default: {}
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties: {}
-              required: []
-              type: object
-            result: {}
-          required:
-          - goal
-          title: read_status参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-run_for_duration:
+      auto-send_command:
         feedback: {}
         goal: {}
         goal_default:
-          direction: null
-          duration: null
-          speed: null
+          command: null
         handles: {}
         placeholder_keys: {}
         result: {}
@@ -107,51 +169,22 @@ longer_bt100:
             feedback: {}
             goal:
               properties:
-                direction:
-                  type: string
-                duration:
-                  type: number
-                speed:
-                  type: number
-              required:
-              - duration
-              type: object
-            result: {}
-          required:
-          - goal
-          title: run_for_duration参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-set_direction:
-        feedback: {}
-        goal: {}
-        goal_default:
-          direction: null
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties:
-                direction:
+                command:
                   type: string
               required:
-              - direction
+              - command
               type: object
             result: {}
           required:
           - goal
-          title: set_direction参数
+          title: send_command参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-set_fullspeed:
+      auto-set_valve_position:
         feedback: {}
         goal: {}
         goal_default:
-          enable: null
+          position: null
         handles: {}
         placeholder_keys: {}
         result: {}
@@ -161,114 +194,24 @@ longer_bt100:
             feedback: {}
             goal:
               properties:
-                enable:
-                  type: boolean
+                position:
+                  type: string
               required:
-              - enable
+              - position
               type: object
             result: {}
           required:
           - goal
-          title: set_fullspeed参数
+          title: set_valve_position参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-set_speed:
-        feedback: {}
-        goal: {}
-        goal_default:
-          speed: null
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties:
-                speed:
-                  type: number
-              required:
-              - speed
-              type: object
-            result: {}
-          required:
-          - goal
-          title: set_speed参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-start:
-        feedback: {}
-        goal: {}
-        goal_default: {}
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties: {}
-              required: []
-              type: object
-            result: {}
-          required:
-          - goal
-          title: start参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-stop:
-        feedback: {}
-        goal: {}
-        goal_default: {}
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties: {}
-              required: []
-              type: object
-            result: {}
-          required:
-          - goal
-          title: stop参数
-          type: object
-        type: UniLabJsonCommandAsync
-    module: device_package_example.devices.longer_bt100.longer_bt100:LongerBT100
+    module: device_package_example.devices.solenoid_valve_4v110.solenoid_valve_4v110:SolenoidValve4V110
     status_types:
-      direction: str
-      is_fullspeed: bool
-      speed: float
       status: str
+      valve_position: str
     type: python
   config_info: []
-  config_schema:
-    properties:
-      address:
-        default: 1
-        description: 设备地址，1-30 为单设备，31 为广播
-        maximum: 31
-        minimum: 1
-        type: integer
-      baudrate:
-        default: 1200
-        description: 波特率，固定 1200
-        type: integer
-      port:
-        default: COM4
-        description: 串口设备路径，如 COM4 或 /dev/ttyUSB0
-        type: string
-      serial_timeout:
-        default: 0.5
-        description: 串口读取超时（秒）
-        type: number
-    type: object
-  description: ''
+  description: 亚德客 4V110-06 DC24V 二位五通电磁阀 (Arduino + 继电器控制)
   handles: []
   icon: ''
   init_param_schema:
@@ -282,18 +225,12 @@ longer_bt100:
       type: object
     data:
       properties:
-        direction:
-          type: string
-        is_fullspeed:
-          type: boolean
-        speed:
-          type: number
         status:
+          type: string
+        valve_position:
           type: string
       required:
       - status
-      - speed
-      - direction
-      - is_fullspeed
+      - valve_position
       type: object
   version: 1.0.0

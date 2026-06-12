@@ -11,6 +11,13 @@ requires-python = ">=3.10"
 license = {text = "MIT"}
 dependencies = [
     "rich",
+    "pyserial",
+    "pymodbus",
+    "numpy",
+    "harvesters",
+    "opencv-python-headless",
+    "pillow",
+    "propar",
 ]
 
 [project.optional-dependencies]

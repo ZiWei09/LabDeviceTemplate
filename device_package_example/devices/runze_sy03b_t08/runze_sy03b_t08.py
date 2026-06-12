@@ -12,7 +12,10 @@ Reference: SY-03B陶瓷阀芯(ASCII)V2.4 说明书
 
 import logging
 import asyncio
-import serial
+try:
+    import serial
+except ImportError:
+    serial = None
 import time as time_module
 from typing import Dict, Any, Optional
 
@@ -251,8 +254,8 @@ class RunzeSY03BT08:
         return self.data.get("max_velocity", 0.5)
     
     @property
-    def mode(self) -> int:
-        return self.data.get("mode", 0)
+    def mode(self) -> float:
+        return float(self.data.get("mode", 0))
     
     @property
     def plunger_position(self) -> str:

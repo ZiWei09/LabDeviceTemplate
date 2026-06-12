@@ -3,7 +3,7 @@ dhjf_circulation_bath:
   - dhjf_circulation_bath
   class:
     action_value_mappings: {}
-    module: unilabos.devices.temperature.dhjf_circulation_bath:DHJFCirculationBath
+    module: device_package_example.devices.dhjf_circulation_bath.dhjf_circulation_bath:DHJFCirculationBath
     status_types: {}
     type: python
   config_info: []

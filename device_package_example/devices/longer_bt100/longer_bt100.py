@@ -9,7 +9,10 @@ import logging
 import time as time_module
 from typing import Dict, Any, Optional
 
-import serial
+try:
+    import serial
+except ImportError:
+    serial = None
 
 try:
     from unilabos.ros.nodes.base_device_node import BaseROS2DeviceNode

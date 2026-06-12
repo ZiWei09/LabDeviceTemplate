@@ -1,6 +1,7 @@
-longer_bt100:
+bronkhorst_el_flow:
   category:
-  - longer_bt100
+  - sensor
+  - bronkhorst_el_flow
   class:
     action_value_mappings:
       auto-cleanup:
@@ -70,7 +71,7 @@ longer_bt100:
           title: post_init参数
           type: object
         type: UniLabJsonCommand
-      auto-read_status:
+      auto-read_value:
         feedback: {}
         goal: {}
         goal_default: {}
@@ -78,7 +79,7 @@ longer_bt100:
         placeholder_keys: {}
         result: {}
         schema:
-          description: ''
+          description: read_value的参数schema
           properties:
             feedback: {}
             goal:
@@ -88,134 +89,107 @@ longer_bt100:
             result: {}
           required:
           - goal
-          title: read_status参数
+          title: read_value参数
           type: object
         type: UniLabJsonCommandAsync
-      auto-run_for_duration:
+      auto-set_setpoint:
         feedback: {}
         goal: {}
         goal_default:
-          direction: null
-          duration: null
-          speed: null
+          setpoint: null
         handles: {}
         placeholder_keys: {}
         result: {}
         schema:
-          description: ''
+          description: set_setpoint的参数schema
           properties:
             feedback: {}
             goal:
               properties:
-                direction:
+                setpoint:
+                  type: number
+              required:
+              - setpoint
+              type: object
+            result: {}
+          required:
+          - goal
+          title: set_setpoint参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-set_setpoint_percent:
+        feedback: {}
+        goal: {}
+        goal_default:
+          percent: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: set_setpoint_percent的参数schema
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                percent:
+                  type: number
+              required:
+              - percent
+              type: object
+            result: {}
+          required:
+          - goal
+          title: set_setpoint_percent参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-set_threshold:
+        feedback: {}
+        goal: {}
+        goal_default:
+          threshold: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: set_threshold的参数schema
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                threshold:
+                  type: number
+              required:
+              - threshold
+              type: object
+            result: {}
+          required:
+          - goal
+          title: set_threshold参数
+          type: object
+        type: UniLabJsonCommandAsync
+      auto-set_user_tag:
+        feedback: {}
+        goal: {}
+        goal_default:
+          tag: null
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: set_user_tag的参数schema
+          properties:
+            feedback: {}
+            goal:
+              properties:
+                tag:
                   type: string
-                duration:
-                  type: number
-                speed:
-                  type: number
               required:
-              - duration
+              - tag
               type: object
             result: {}
           required:
           - goal
-          title: run_for_duration参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-set_direction:
-        feedback: {}
-        goal: {}
-        goal_default:
-          direction: null
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties:
-                direction:
-                  type: string
-              required:
-              - direction
-              type: object
-            result: {}
-          required:
-          - goal
-          title: set_direction参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-set_fullspeed:
-        feedback: {}
-        goal: {}
-        goal_default:
-          enable: null
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties:
-                enable:
-                  type: boolean
-              required:
-              - enable
-              type: object
-            result: {}
-          required:
-          - goal
-          title: set_fullspeed参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-set_speed:
-        feedback: {}
-        goal: {}
-        goal_default:
-          speed: null
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties:
-                speed:
-                  type: number
-              required:
-              - speed
-              type: object
-            result: {}
-          required:
-          - goal
-          title: set_speed参数
-          type: object
-        type: UniLabJsonCommandAsync
-      auto-start:
-        feedback: {}
-        goal: {}
-        goal_default: {}
-        handles: {}
-        placeholder_keys: {}
-        result: {}
-        schema:
-          description: ''
-          properties:
-            feedback: {}
-            goal:
-              properties: {}
-              required: []
-              type: object
-            result: {}
-          required:
-          - goal
-          title: start参数
+          title: set_user_tag参数
           type: object
         type: UniLabJsonCommandAsync
       auto-stop:
@@ -226,7 +200,7 @@ longer_bt100:
         placeholder_keys: {}
         result: {}
         schema:
-          description: ''
+          description: stop的参数schema
           properties:
             feedback: {}
             goal:
@@ -239,36 +213,21 @@ longer_bt100:
           title: stop参数
           type: object
         type: UniLabJsonCommandAsync
-    module: device_package_example.devices.longer_bt100.longer_bt100:LongerBT100
+    module: device_package_example.devices.bronkhorst_el_flow.bronkhorst_el_flow:BronkhorstElFlow
     status_types:
-      direction: str
-      is_fullspeed: bool
-      speed: float
+      capacity_unit: str
+      flow: float
+      level: bool
+      rssi: int
+      setpoint: float
       status: str
+      temperature: float
+      user_tag: str
+      value: float
+      valve_output: float
     type: python
   config_info: []
-  config_schema:
-    properties:
-      address:
-        default: 1
-        description: 设备地址，1-30 为单设备，31 为广播
-        maximum: 31
-        minimum: 1
-        type: integer
-      baudrate:
-        default: 1200
-        description: 波特率，固定 1200
-        type: integer
-      port:
-        default: COM4
-        description: 串口设备路径，如 COM4 或 /dev/ttyUSB0
-        type: string
-      serial_timeout:
-        default: 0.5
-        description: 串口读取超时（秒）
-        type: number
-    type: object
-  description: ''
+  description: Bronkhorst EL-FLOW Prestige 质量流量控制器(MFC)，通过RS232/RS485 ProPar协议通信，支持流量测量、设定点控制、温度监测和阀门输出监控。适用于气体流量精密控制的实验室自动化应用。
   handles: []
   icon: ''
   init_param_schema:
@@ -282,18 +241,36 @@ longer_bt100:
       type: object
     data:
       properties:
-        direction:
+        capacity_unit:
           type: string
-        is_fullspeed:
+        flow:
+          type: number
+        level:
           type: boolean
-        speed:
+        rssi:
+          type: integer
+        setpoint:
           type: number
         status:
           type: string
+        temperature:
+          type: number
+        user_tag:
+          type: string
+        value:
+          type: number
+        valve_output:
+          type: number
       required:
       - status
-      - speed
-      - direction
-      - is_fullspeed
+      - flow
+      - setpoint
+      - temperature
+      - valve_output
+      - capacity_unit
+      - user_tag
+      - level
+      - rssi
+      - value
       type: object
   version: 1.0.0

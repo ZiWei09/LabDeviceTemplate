@@ -2,7 +2,7 @@ jyhsm_temperature_transmitter:
   category:
   - sensor
   class:
-    module: unilabos.devices.sensor.jyhsm_temperature_transmitter:JyhsmTemperatureTransmitter
+    module: device_package_example.devices.jyhsm_temperature_transmitter.jyhsm_temperature_transmitter:JyhsmTemperatureTransmitter
     type: python
     status_types:
       status: str

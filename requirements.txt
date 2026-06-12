@@ -1,1 +1,8 @@
 rich
+pyserial
+pymodbus
+numpy
+harvesters
+opencv-python-headless
+pillow
+propar
