@@ -6,7 +6,7 @@
             "children": [],
             "parent": null,
             "type": "device",
-            "class": "syringe_pump_with_valve.runze.SY03B-T08",
+            "class": "runze_sy03b_t08",
             "position": {"x": 0, "y": 0, "z": 0},
             "config": {
                 "port": "COM4",

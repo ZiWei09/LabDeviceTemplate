@@ -2,7 +2,7 @@ jyhsm_temperature_transmitter:
   category:
   - sensor
   class:
-    module: unilabos.devices.sensor.jyhsm_temperature_transmitter:JyhsmTemperatureTransmitter
+    module: CosLab_SHU_Device_package.devices.jyhsm_temperature_transmitter.jyhsm_temperature_transmitter:JyhsmTemperatureTransmitter
     type: python
     status_types:
       status: str
@@ -52,7 +52,7 @@ jyhsm_temperature_transmitter:
           tolerance: float
           timeout: float
   config_info: []
-  description: JYHSM一体化温度变送器，安徽久跃仪表有限公司生产。通过Modbus RTU协议(RS485)通信，支持实时温度监测、温度偏移校准、单位切换等功能。新增温度阈值监控功能，可设置目标温度并在达到时触发提醒，适用于实验过程监控和自动化工作流。
+  description: JY-HSM 一体化温度变送器，安徽久跃仪表有限公司生产。通过 Modbus RTU 协议(RS485)通信，支持实时温度监测、温度偏移校准、单位切换等功能。新增温度阈值监控功能，可设置目标温度并在达到时触发提醒，适用于实验过程监控和自动化工作流。
   handles: []
   icon: ''
   init_param_schema:

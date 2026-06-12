@@ -99,7 +99,28 @@ hk_a0:
           title: stop_all参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.custom.hk_a0:HKA0
+      auto-read_outputs:
+        feedback: {}
+        goal: {}
+        goal_default: {}
+        handles: {}
+        placeholder_keys: {}
+        result: {}
+        schema:
+          description: ''
+          properties:
+            feedback: {}
+            goal:
+              properties: {}
+              required: []
+              type: object
+            result: {}
+          required:
+          - goal
+          title: read_outputs参数
+          type: object
+        type: UniLabJsonCommandAsync
+    module: CosLab_SHU_Device_package.devices.hk_a0.hk_a0:HKA0
     status_types:
       outputs: String
       status: str
@@ -110,7 +131,7 @@ hk_a0:
     port: COM3
     slave_address: 1
   config_info: []
-  description: ''
+  description: 华控 RS485 模拟量输出模块（Modbus RTU，FC06/03/10，寄存器 0x000A 起）
   handles: []
   icon: ''
   init_param_schema:

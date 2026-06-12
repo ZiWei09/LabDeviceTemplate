@@ -424,7 +424,7 @@ chi760e:
           title: stop_operation参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.sensor.chi760e:CHI760E
+    module: CosLab_SHU_Device_package.devices.chi760e.chi760e:CHI760E
     status_types:
       data_folder: str
       last_data_file: str

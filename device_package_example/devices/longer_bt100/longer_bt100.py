@@ -9,7 +9,10 @@ import logging
 import time as time_module
 from typing import Dict, Any, Optional
 
-import serial
+try:
+    import serial
+except ImportError:
+    serial = None
 
 try:
     from unilabos.ros.nodes.base_device_node import BaseROS2DeviceNode
@@ -537,71 +540,52 @@ class LongerBT100:
         return self.data.get("is_fullspeed", False)
 
 
-# ========== 独立测试入口 ==========
+# ========== 本地硬件冒烟==========
+# python longer_bt100.py --port COM4 [-v] [--demo]
 
-def _main():
+
+def _smoke_main():
     import argparse
     import asyncio
+    import sys
+    from pathlib import Path
 
-    parser = argparse.ArgumentParser(
-        description="单独测试兰格 BT100-2J 驱动"
-    )
-    parser.add_argument("--port", default="COM4", help="串口，如 COM4 或 /dev/ttyUSB0")
-    parser.add_argument("--baudrate", type=int, default=1200)
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="兰格 BT100-2J 蠕动泵 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM4", default_baudrate=1200)
     parser.add_argument("--address", type=int, default=1)
-    parser.add_argument("--device-id", default="test_bt100", dest="device_id")
-    parser.add_argument("-v", "--verbose", action="store_true")
-    parser.add_argument(
-        "--demo-run",
-        action="store_true",
-        help="执行短时 run→sleep→stop 演示（注意安全）"
-    )
+    add_common_args(parser)
     parser.add_argument("--demo-speed", type=float, default=50.0, dest="demo_speed")
     parser.add_argument("--demo-direction", choices=("CW", "CCW"), default="CW", dest="demo_direction")
     parser.add_argument("--demo-seconds", type=float, default=3.0, dest="demo_seconds")
     args = parser.parse_args()
-
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    )
+    setup_logging(args.verbose)
 
     async def run():
-        config = {
-            "port": args.port,
-            "baudrate": args.baudrate,
-            "address": args.address,
-        }
-        pump = LongerBT100(device_id=args.device_id, config=config)
-        if not await pump.initialize():
-            return 1
-        try:
-            print("=" * 50)
-            print("读取泵状态...")
-            st = await pump.read_status()
-            print(f"read_status: {st}")
-            print(f"pump.data: {pump.data}")
+        dev = LongerBT100(
+            device_id="smoke_test",
+            config={"port": args.port, "baudrate": args.baudrate, "address": args.address},
+        )
 
-            if args.demo_run:
-                print("=" * 50)
-                print(f"演示: 设置转速 {args.demo_speed} RPM, 方向 {args.demo_direction}")
-                await pump.set_speed(args.demo_speed)
-                await pump.set_direction(args.demo_direction)
-                print("启动泵...")
-                await pump.start()
-                print(f"运行 {args.demo_seconds} 秒...")
-                await asyncio.sleep(args.demo_seconds)
-                print("停止泵...")
-                await pump.stop()
-                st2 = await pump.read_status()
-                print(f"演示后状态: {st2}")
-        finally:
-            await pump.cleanup()
-        return 0
+        async def demo(d):
+            await d.set_speed(args.demo_speed)
+            await d.set_direction(args.demo_direction)
+            await d.start()
+            await asyncio.sleep(args.demo_seconds)
+            await d.stop()
+            return await d.read_status()
 
-    sys.exit(asyncio.run(run()))
+        return await smoke_lifecycle(
+            dev,
+            read_fn=lambda d: d.read_status(),
+            demo_fn=demo,
+            do_demo=args.demo,
+        )
+
+    run_smoke(run)
 
 
 if __name__ == "__main__":
-    import sys
-    _main()
+    _smoke_main()

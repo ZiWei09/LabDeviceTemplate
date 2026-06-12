@@ -205,7 +205,7 @@ solenoid_valve_4v110:
           title: set_valve_position参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.pump_and_valve.solenoid_valve_4v110:SolenoidValve4V110
+    module: CosLab_SHU_Device_package.devices.solenoid_valve_4v110.solenoid_valve_4v110:SolenoidValve4V110
     status_types:
       status: str
       valve_position: str

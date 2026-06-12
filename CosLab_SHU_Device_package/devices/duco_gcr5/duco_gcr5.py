@@ -2,14 +2,14 @@
 DUCO GCR5-910 协作机器人驱动（TCP 2000 端口纯文本协议）
 
 真实命令格式（通过 Telnet 验证）:
-  - poweron      -> poweron success
-  - poweroff     -> poweroff success  
-  - enable       -> enable success
-  - disable      -> disable success
+  - poweron()      -> poweron success
+  - poweroff()     -> poweroff success
+  - enable()       -> enable success
+  - disable()      -> disable success
   - run("program/20260421.jspf",70) -> run success
   - state          -> 4:0:2:x (机器人状态:程序状态:操作模式:子状态)
   - speed(50)      -> set speed 50%
-  - clear        -> clear alarm
+  - clear()        -> clear alarm
 
 状态解析:
   state[0]: 0=Start 4=PowerOff 5=Disable 6=Enable
@@ -30,9 +30,33 @@ try:
 except ImportError:
     BaseROS2DeviceNode = None
 
+try:
+    from unilabos.registry.decorators import device, action, topic_config, not_action
+except ImportError:
+    def device(**kwargs):
+        def wrapper(cls):
+            return cls
+        return wrapper
+    def action(**kwargs):
+        def wrapper(func):
+            return func
+        return wrapper
+    def topic_config(**kwargs):
+        def wrapper(func):
+            return func
+        return wrapper
+    def not_action(func):
+        return func
 
+
+@device(
+    id="duco_gcr5",
+    category=["robot"],
+    description="DUCO GCR5-910 协作机器人，TCP 通信",
+    display_name="DUCO 协作机器人"
+)
 class DucoGCR5:
-    """新松 DUCO GCR5-910 协作机器人驱动（TCP 2000 文本协议版）"""
+    """多可 DUCO GCR5-910 协作机器人驱动（中科新松 / 新松智能机器人子品牌，TCP 2000 文本协议）"""
 
     _ros_node: "BaseROS2DeviceNode"
 
@@ -107,6 +131,7 @@ class DucoGCR5:
             "error_message": "",
         }
 
+    @not_action
     def post_init(self, ros_node: "BaseROS2DeviceNode"):
         self._ros_node = ros_node
 
@@ -246,6 +271,7 @@ class DucoGCR5:
 
     # ======================== 生命周期 ========================
 
+    @action(description="初始化设备")
     async def initialize(self) -> bool:
         """初始化"""
         if not self._connect_cmd():
@@ -277,6 +303,7 @@ class DucoGCR5:
         self.logger.info("DUCO GCR5（TCP 2000）初始化完成")
         return True
 
+    @action(description="清理资源")
     async def cleanup(self) -> bool:
         """清理"""
         self._running = False
@@ -358,7 +385,7 @@ class DucoGCR5:
 
     async def power_on(self) -> str:
         """上电"""
-        resp = self._send_cmd("poweron")
+        resp = self._send_cmd("poweron()")
         if self._is_success(resp):
             return "poweron success"
         else:
@@ -366,7 +393,7 @@ class DucoGCR5:
 
     async def power_off(self) -> str:
         """下电"""
-        resp = self._send_cmd("poweroff")
+        resp = self._send_cmd("poweroff()")
         if self._is_success(resp):
             return "poweroff success"
         else:
@@ -374,7 +401,7 @@ class DucoGCR5:
 
     async def enable(self) -> str:
         """使能"""
-        resp = self._send_cmd("enable")
+        resp = self._send_cmd("enable()")
         if self._is_success(resp):
             return "enable success"
         else:
@@ -382,7 +409,7 @@ class DucoGCR5:
 
     async def disable(self) -> str:
         """去使能"""
-        resp = self._send_cmd("disable")
+        resp = self._send_cmd("disable()")
         if self._is_success(resp):
             return "disable success"
         else:
@@ -397,9 +424,12 @@ class DucoGCR5:
               - 完整路径: "program/xxx.jspf"
             speed: 速度百分比 (1-100)，传 0 使用默认速度 70
         """
+        # 自动补全路径
+        if not name.startswith("program/"):
+            name = f"program/{name}.jspf"
         
         speed_val = int(speed) if speed > 0 else 70
-        cmd = f'run({name}.jspf,{speed_val})'
+        cmd = f'run("{name}",{speed_val})'
         resp = self._send_cmd(cmd)
         if self._is_success(resp):
             return "run success"
@@ -452,3 +482,40 @@ class DucoGCR5:
             return "clear success"
         else:
             return f"clear fail: {resp or 'no response'}"
+
+
+# ========== 本地硬件冒烟==========
+# python duco_gcr5.py --ip 192.168.1.10 [-v]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_ip_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="Duco GCR5 机械臂 - 本地硬件冒烟")
+    add_ip_args(parser, default_ip="192.168.1.10", default_port=2000)
+    parser.add_argument("--status-port", type=int, default=2001, dest="status_port")
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = DucoGCR5(
+            device_id="smoke_test",
+            config={
+                "ip": args.ip,
+                "cmd_port": args.cmd_port,
+                "status_port": args.status_port,
+            },
+        )
+        return await smoke_lifecycle(dev, read_fn=lambda d: d.query_state())
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

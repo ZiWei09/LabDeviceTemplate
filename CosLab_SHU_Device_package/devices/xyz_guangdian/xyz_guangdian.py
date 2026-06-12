@@ -6,6 +6,7 @@ XYZ光电工作台设备驱动 - 修复版
 
 import logging
 import time as time_module
+import asyncio
 from typing import Dict, Any, Optional
 import struct
 
@@ -14,8 +15,32 @@ try:
 except ImportError:
     BaseROS2DeviceNode = None
 
+try:
+    from unilabos.registry.decorators import device, action, topic_config, not_action
+except ImportError:
+    def device(**kwargs):
+        def wrapper(cls):
+            return cls
+        return wrapper
+    def action(**kwargs):
+        def wrapper(func):
+            return func
+        return wrapper
+    def topic_config(**kwargs):
+        def wrapper(func):
+            return func
+        return wrapper
+    def not_action(func):
+        return func
+
+@device(
+    id="xyz_guangdian",
+    category=["motion"],
+    description="XYZ 三维运动平台，支持三轴运动和推杆控制",
+    display_name="XYZ 三维平台"
+)
 class XYZGuangdian:
-    _ros_node: "BaseROS2DeviceNode"
+    _ros_node: Optional["BaseROS2DeviceNode"] = None
 
     def __init__(self, device_id: str = None, config: Dict[str, Any] = None, **kwargs):
         if device_id is None and 'id' in kwargs:
@@ -71,10 +96,12 @@ class XYZGuangdian:
             "error_code": 0
         }
 
+    @not_action
     def post_init(self, ros_node: "BaseROS2DeviceNode"):
         """与ROS节点关联"""
         self._ros_node = ros_node
 
+    @action(description="初始化设备")
     async def initialize(self) -> bool:
         """初始化设备"""
         try:
@@ -161,12 +188,12 @@ class XYZGuangdian:
                 
                 # 读取寄存器
                 response = self.modbus_client.read_holding_registers(
-                    register, count, slave=address
+                    register, count=count, device_id=address
                 )
                 
                 if response.isError():
                     self.logger.warning(f"读取寄存器失败 (尝试 {attempt+1}/{self.retry_count}): {response}")
-                    await self._ros_node.sleep(self.retry_delay)
+                    await asyncio.sleep(self.retry_delay)
                     continue
                 
                 # 成功读取
@@ -177,7 +204,7 @@ class XYZGuangdian:
             except Exception as e:
                 last_exception = e
                 self.logger.warning(f"读取寄存器异常 (尝试 {attempt+1}/{self.retry_count}): {e}")
-                await self._ros_node.sleep(self.retry_delay)
+                await asyncio.sleep(self.retry_delay)
         
         self.logger.error(f"读取寄存器最终失败: {last_exception}")
         return None
@@ -206,16 +233,16 @@ class XYZGuangdian:
                 
                 # 写入寄存器
                 response = self.modbus_client.write_register(
-                    register, value, slave=address
+                    register, value, device_id=address
                 )
                 
                 if response.isError():
                     self.logger.warning(f"写入寄存器失败 (尝试 {attempt+1}/{self.retry_count}): {response}")
-                    await self._ros_node.sleep(self.retry_delay)
+                    await asyncio.sleep(self.retry_delay)
                     continue
-                
+
                 # 验证写入
-                await self._ros_node.sleep(0.05)
+                await asyncio.sleep(0.05)
                 verify_response = await self._read_register_safe(address, register, 1)
                 if verify_response and verify_response.registers[0] == value:
                     if attempt > 0:
@@ -223,17 +250,18 @@ class XYZGuangdian:
                     return True
                 else:
                     self.logger.warning(f"写入验证失败 (尝试 {attempt+1}/{self.retry_count})")
-                    await self._ros_node.sleep(self.retry_delay)
+                    await asyncio.sleep(self.retry_delay)
                     continue
-                    
+
             except Exception as e:
                 last_exception = e
                 self.logger.warning(f"写入寄存器异常 (尝试 {attempt+1}/{self.retry_count}): {e}")
-                await self._ros_node.sleep(self.retry_delay)
+                await asyncio.sleep(self.retry_delay)
         
         self.logger.error(f"写入寄存器最终失败: {last_exception}")
         return False
 
+    @action(description="清理资源")
     async def cleanup(self) -> bool:
         """清理设备"""
         try:
@@ -286,9 +314,9 @@ class XYZGuangdian:
         return self.data.get("push_rod_status", "released")
 
     @property
-    def error_code(self) -> int:
+    def error_code(self) -> float:
         """错误代码"""
-        return self.data.get("error_code", 0)
+        return float(self.data.get("error_code", 0))
 
     # ========== 动作方法 ==========
 
@@ -365,7 +393,7 @@ class XYZGuangdian:
                     return False
             
             # 修复：使用正确的异步等待
-            await self._ros_node.sleep(2.0)  # 等待回零完成
+            await asyncio.sleep(2.0)  # 等待回零完成
             
             # 检查回零状态
             homed_axes = 0
@@ -461,7 +489,7 @@ class XYZGuangdian:
             
             if wait_done:
                 # 等待移动完成
-                await self._ros_node.sleep(1.0)  # 修复：使用正确的异步等待
+                await asyncio.sleep(1.0)  # 修复：使用正确的异步等待
                 
                 # 检查是否到达目标
                 all_reached = True
@@ -682,3 +710,35 @@ class XYZGuangdian:
         except Exception as e:
             self.logger.error(f"设置加速度失败: {e}")
             return False
+
+
+# ========== 本地硬件冒烟==========
+# python xyz_guangdian.py --port COM35 [-v]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="XYZ 光电台 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM35", default_baudrate=9600)
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = XYZGuangdian(
+            device_id="smoke_test",
+            config={"port": args.port, "baudrate": args.baudrate},
+        )
+        return await smoke_lifecycle(dev, read_fn=lambda d: d.get_position())
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

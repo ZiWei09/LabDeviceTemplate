@@ -56,7 +56,7 @@ except ImportError:
     display_name="DUCO 协作机器人"
 )
 class DucoGCR5:
-    """新松 DUCO GCR5-910 协作机器人驱动（TCP 2000 文本协议版）"""
+    """多可 DUCO GCR5-910 协作机器人驱动（中科新松 / 新松智能机器人子品牌，TCP 2000 文本协议）"""
 
     _ros_node: "BaseROS2DeviceNode"
 
@@ -482,3 +482,40 @@ class DucoGCR5:
             return "clear success"
         else:
             return f"clear fail: {resp or 'no response'}"
+
+
+# ========== 本地硬件冒烟==========
+# python duco_gcr5.py --ip 192.168.1.10 [-v]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_ip_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="Duco GCR5 机械臂 - 本地硬件冒烟")
+    add_ip_args(parser, default_ip="192.168.1.10", default_port=2000)
+    parser.add_argument("--status-port", type=int, default=2001, dest="status_port")
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = DucoGCR5(
+            device_id="smoke_test",
+            config={
+                "ip": args.ip,
+                "cmd_port": args.cmd_port,
+                "status_port": args.status_port,
+            },
+        )
+        return await smoke_lifecycle(dev, read_fn=lambda d: d.query_state())
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

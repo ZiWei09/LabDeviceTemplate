@@ -1,0 +1,139 @@
+{
+  "nodes": [
+    {
+      "id": "dhjf_bath_1",
+      "name": "DHJF-2005A 恒温循环水浴",
+      "children": [],
+      "parent": null,
+      "type": "device",
+      "class": "dhjf_circulation_bath",
+      "position": {"x": 0, "y": 0, "z": 0},
+      "config": {"port": "COM4", "slave_id": 1, "baudrate": 9600, "timeout": 1.0},
+      "data": {}
+    },
+    {
+      "id": "hk_a0_module_1",
+      "name": "华控模拟量输出",
+      "children": [],
+      "parent": null,
+      "type": "device",
+      "class": "hk_a0",
+      "position": {"x": 800, "y": 0, "z": 0},
+      "config": {"slave_address": 1},
+      "data": {}
+    },
+    {
+      "id": "longer_bt100_1",
+      "name": "兰格蠕动泵BT100-2J",
+      "children": [],
+      "parent": null,
+      "type": "device",
+      "class": "longer_bt100",
+      "position": {"x": 400, "y": 0, "z": 0},
+      "config": {
+        "port": "COM4",
+        "baudrate": 1200,
+        "address": 1,
+        "serial_timeout": 0.5
+      },
+      "data": {}
+    },
+    {
+      "id": "jyhsm_temp_1",
+      "name": "JY-HSM 一体化温度变送器",
+      "children": [],
+      "parent": null,
+      "type": "device",
+      "class": "jyhsm_temperature_transmitter",
+      "position": {"x": 0, "y": 500, "z": 0},
+      "config": {
+        "port": "COM4",
+        "baudrate": 9600,
+        "slave_address": 1,
+        "timeout": 1.0
+      },
+      "data": {
+        "status": "Idle",
+        "temperature": 0.0,
+        "offset": 0.0,
+        "unit": "℃",
+        "slave_address": 1,
+        "baudrate": 9600
+      }
+    },
+    {
+      "id": "runze_pump_1",
+      "name": "SY-03B注射泵",
+      "children": [],
+      "parent": null,
+      "type": "device",
+      "class": "runze_sy03b_t08",
+      "position": {"x": 400, "y": 500, "z": 0},
+      "config": {
+        "port": "COM4",
+        "address": "1",
+        "max_volume": 25.0
+      },
+      "data": {
+        "status": "Offline",
+        "mode": 0,
+        "max_velocity": 0.5,
+        "velocity_grade": "600",
+        "velocity_init": "600",
+        "velocity_end": "600",
+        "valve_position": "0",
+        "position": 0.0,
+        "plunger_position": "0"
+      }
+    },
+    {
+      "id": "duco_gcr5_1",
+      "name": "新松GCR5机械臂",
+      "children": [],
+      "parent": null,
+      "type": "device",
+      "class": "duco_gcr5",
+      "position": {"x": 800, "y": 500, "z": 0},
+      "config": {
+        "ip": "192.168.1.10",
+        "cmd_port": 2000,
+        "status_port": 2001,
+        "timeout": 5.0
+      },
+      "data": {}
+    },
+    {
+      "id": "xyz_guangdian_1",
+      "name": "XYZ光电工作台",
+      "children": [],
+      "parent": null,
+      "type": "device",
+      "class": "xyz_guangdian",
+      "position": {"x": 400, "y": 250, "z": 0},
+      "config": {
+        "port": "COM35",
+        "baudrate": 9600,
+        "timeout": 2.0,
+        "retry_count": 3,
+        "retry_delay": 0.1
+      },
+      "data": {
+        "status": "Idle",
+        "position_x": 0.0,
+        "position_y": 0.0,
+        "position_z": 0.0,
+        "push_rod_status": "released",
+        "is_enabled": false,
+        "is_homed": false,
+        "velocity_x": 0.0,
+        "velocity_y": 0.0,
+        "velocity_z": 0.0,
+        "temperature": 25.0,
+        "error_code": 0
+      }
+    }
+  ],
+  "links": [],
+  "description": "完整实验室设备拓扑 - 恒温水浴 + 模拟量输出 + 蠕动泵 + 温度变送器 + 注射泵 + 机械臂 + XYZ光电工作台",
+  "version": "1.0"
+}

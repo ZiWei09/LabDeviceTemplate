@@ -282,7 +282,7 @@ daheng_hd_r630c:
           title: stop_stream参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.sensor.daheng_hd_r630c:DahengHdR630c
+    module: CosLab_SHU_Device_package.devices.daheng_hd_r630c.daheng_hd_r630c:DahengHdR630c
     status_types:
       exposure_time: float
       frame_rate: float
@@ -297,7 +297,7 @@ daheng_hd_r630c:
       status: str
     type: python
   config_info: []
-  description: 度申 DO3THINK M3S630-H-O2C (HD-R630C-U3) USB3 Vision 彩色工业相机
+  description: 大恒贴牌 HD-R630C-U3（度申代工，Harvesters + 度申 DVP GenTL）
   handles: []
   icon: ''
   init_param_schema:

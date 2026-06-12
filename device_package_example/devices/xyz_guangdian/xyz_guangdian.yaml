@@ -438,7 +438,7 @@ xyz_guangdian:
           title: stop_all参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.workstation.xyz_guangdian:XYZGuangdian
+    module: device_package_example.devices.xyz_guangdian.xyz_guangdian:XYZGuangdian
     status_types:
       error_code: int
       is_enabled: bool

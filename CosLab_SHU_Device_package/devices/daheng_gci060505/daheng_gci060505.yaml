@@ -159,7 +159,7 @@ daheng_gci060505:
           title: turn_on参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.custom.daheng_gci060505:DahengGCI060505
+    module: CosLab_SHU_Device_package.devices.daheng_gci060505.daheng_gci060505:DahengGCI060505
     status_types:
       brightness: float
       light_on: bool

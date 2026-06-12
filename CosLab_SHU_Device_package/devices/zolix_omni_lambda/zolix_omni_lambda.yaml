@@ -401,7 +401,7 @@ zolix_omni_lambda:
           title: stop参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.custom.zolix_omni_lambda:ZolixOmniLambda
+    module: CosLab_SHU_Device_package.devices.zolix_omni_lambda.zolix_omni_lambda:ZolixOmniLambda
     status_types:
       entrance_port: str
       exit_port: str

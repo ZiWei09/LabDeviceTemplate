@@ -183,7 +183,7 @@ cni_laser_msl_u_532:
           title: turn_on参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.custom.cni_laser_msl_u_532:CNILaserMSLU532
+    module: CosLab_SHU_Device_package.devices.cni_laser_msl_u_532.cni_laser_msl_u_532:CNILaserMSLU532
     status_types:
       laser_on: str
       power: float

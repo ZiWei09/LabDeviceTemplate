@@ -239,7 +239,7 @@ longer_bt100:
           title: stop参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.pump_and_valve.longer_bt100:LongerBT100
+    module: device_package_example.devices.longer_bt100.longer_bt100:LongerBT100
     status_types:
       direction: str
       is_fullspeed: bool

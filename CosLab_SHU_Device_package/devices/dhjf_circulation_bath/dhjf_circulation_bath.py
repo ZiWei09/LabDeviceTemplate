@@ -24,7 +24,31 @@ except Exception:
     except Exception:
         ModbusSerialClient = None
 
+try:
+    from unilabos.registry.decorators import device, action, topic_config, not_action
+except ImportError:
+    def device(**kwargs):
+        def wrapper(cls):
+            return cls
+        return wrapper
+    def action(**kwargs):
+        def wrapper(func):
+            return func
+        return wrapper
+    def topic_config(**kwargs):
+        def wrapper(func):
+            return func
+        return wrapper
+    def not_action(func):
+        return func
 
+
+@device(
+    id="dhjf_circulation_bath",
+    category=["temperature"],
+    description="DHJF-2005A 低温恒温搅拌反应浴，支持多段程序控制",
+    display_name="DHJF 循环水浴"
+)
 class DHJFCirculationBath:
     """
     DHJF-2005A 低温恒温搅拌反应浴驱动（Modbus RTU, RS485）
@@ -111,6 +135,7 @@ class DHJFCirculationBath:
         
         self.logger.info(f"[INIT] DHJF-2005A 初始化: port={self.port}, slave_id={self.slave_id}, baudrate={self.baudrate}")
 
+    @not_action
     def post_init(self, ros_node: "BaseROS2DeviceNode"):
         self._ros_node = ros_node
         self.logger.info(f"[POST_INIT] ROS node 已设置")
@@ -277,6 +302,7 @@ class DHJFCirculationBath:
             self.data["over_temp_alarm"] = bool((v >> self.BIT_OVER_ALARM) & 1)
 
     # --- 生命周期 ---
+    @action(description="初始化设备")
     async def initialize(self) -> bool:
         self.logger.info("[INITIALIZE] 开始初始化设备...")
         self.data["status"] = "Busy"
@@ -289,6 +315,7 @@ class DHJFCirculationBath:
         self.logger.info("[INITIALIZE] 初始化完成")
         return True
 
+    @action(description="清理资源")
     async def cleanup(self) -> bool:
         self._disconnect()
         self.data["status"] = "Idle"
@@ -450,3 +477,49 @@ class DHJFCirculationBath:
             t, h, m = float(triplet[0]), int(triplet[1]), int(triplet[2])
             ok &= await self.set_segment(i, t, h, m)
         return ok
+
+
+# ========== 本地硬件冒烟==========
+# python dhjf_circulation_bath.py --port COM4 [-v]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="DHJF 循环浴 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM4", default_baudrate=9600)
+    parser.add_argument("--slave-id", type=int, default=1, dest="slave_id")
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = DHJFCirculationBath(
+            device_id="smoke_test",
+            config={
+                "port": args.port,
+                "baudrate": args.baudrate,
+                "slave_id": args.slave_id,
+            },
+        )
+
+        def read_state(d):
+            return {
+                "temp": d.temp,
+                "temp_target": d.temp_target,
+                "stir_speed": d.stir_speed,
+                "status": d.status,
+            }
+
+        return await smoke_lifecycle(dev, read_fn=read_state)
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

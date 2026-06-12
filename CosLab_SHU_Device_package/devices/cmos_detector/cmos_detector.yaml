@@ -475,7 +475,7 @@ cmos_detector:
           title: stop_acquisition参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.sensor.cmos_detector:CMOSDetector
+    module: CosLab_SHU_Device_package.devices.cmos_detector.cmos_detector:CMOSDetector
     status_types:
       average_count: float
       gain: float

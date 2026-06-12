@@ -153,12 +153,12 @@ electrolytic_cell_gripper:
           title: post_init参数
           type: object
         type: UniLabJsonCommand
-    module: unilabos.devices.custom.electrolytic_cell_gripper:ElectrolyticCellGripper
+    module: CosLab_SHU_Device_package.devices.electrolytic_cell_gripper.electrolytic_cell_gripper:ElectrolyticCellGripper
     status_types:
       status: str
     type: python
   config_info: []
-  description: ''
+  description: 电解池夹爪工作站（2×俏优灵步进电机 + 大寰 PGE 平行电爪，RS485 Modbus RTU）
   handles: []
   icon: ''
   init_param_schema:

@@ -1,5 +1,5 @@
 """
-JYHSM 一体化温度变送器驱动
+JY-HSM 一体化温度变送器驱动
 厂家：安徽久跃仪表有限公司
 通信协议：Modbus RTU (RS485)
 默认参数：9600, 8N1, 从站地址 1
@@ -182,12 +182,12 @@ UNIT_MAP = {
 @device(
     id="jyhsm_temperature_transmitter",
     category=["temperature"],
-    description="JYHSM 一体化温度变送器，Modbus RTU",
-    display_name="JYHSM 温度变送器"
+    description="JY-HSM 一体化温度变送器，Modbus RTU",
+    display_name="JY-HSM 温度变送器"
 )
 class JyhsmTemperatureTransmitter:
     """
-    JYHSM 一体化温度变送器 Modbus RTU 驱动
+    JY-HSM 一体化温度变送器 Modbus RTU 驱动
     (所有数值类型均对齐为 float 以支持 Uni-Lab-OS 框架)
     
     新增功能：
@@ -664,3 +664,43 @@ class JyhsmTemperatureTransmitter:
         except Exception:
             self.data["status"] = "Error"
             return False
+
+
+# ========== 本地硬件冒烟==========
+# python jyhsm_temperature_transmitter.py --port COM4 [-v]
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="JY-HSM 温度变送器 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM4", default_baudrate=9600)
+    parser.add_argument("--slave-address", type=int, default=1, dest="slave_address")
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = JyhsmTemperatureTransmitter(
+            device_id="smoke_test",
+            config={
+                "port": args.port,
+                "baudrate": args.baudrate,
+                "slave_address": args.slave_address,
+            },
+        )
+        return await smoke_lifecycle(
+            dev,
+            read_fn=lambda d: d.read_temperature(),
+        )
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

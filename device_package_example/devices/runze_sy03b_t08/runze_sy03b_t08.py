@@ -12,7 +12,10 @@ Reference: SY-03B陶瓷阀芯(ASCII)V2.4 说明书
 
 import logging
 import asyncio
-import serial
+try:
+    import serial
+except ImportError:
+    serial = None
 import time as time_module
 from typing import Dict, Any, Optional
 
@@ -251,8 +254,8 @@ class RunzeSY03BT08:
         return self.data.get("max_velocity", 0.5)
     
     @property
-    def mode(self) -> int:
-        return self.data.get("mode", 0)
+    def mode(self) -> float:
+        return float(self.data.get("mode", 0))
     
     @property
     def plunger_position(self) -> str:
@@ -402,3 +405,45 @@ class RunzeSY03BT08:
 
 
 DEVICE_CLASS = RunzeSY03BT08
+
+
+# ========== 本地硬件冒烟==========
+# python runze_sy03b_t08.py --port COM4 [-v]
+# 注意：initialize 会执行泵复位归零，耗时约 10~60 秒
+
+
+def _smoke_main():
+    import argparse
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from smoke_runner import add_common_args, add_serial_args, run_smoke, setup_logging, smoke_lifecycle
+
+    parser = argparse.ArgumentParser(description="Runze SY-03B 注射泵 - 本地硬件冒烟")
+    add_serial_args(parser, default_port="COM4", default_baudrate=9600)
+    parser.add_argument("--address", type=int, default=0)
+    add_common_args(parser)
+    args = parser.parse_args()
+    setup_logging(args.verbose)
+
+    async def run():
+        dev = RunzeSY03BT08(
+            device_id="smoke_test",
+            config={"port": args.port, "baudrate": args.baudrate, "address": args.address},
+        )
+
+        def read_state(d):
+            return {
+                "status": d.status,
+                "position": d.position,
+                "valve_position": d.valve_position,
+            }
+
+        return await smoke_lifecycle(dev, read_fn=read_state)
+
+    run_smoke(run)
+
+
+if __name__ == "__main__":
+    _smoke_main()

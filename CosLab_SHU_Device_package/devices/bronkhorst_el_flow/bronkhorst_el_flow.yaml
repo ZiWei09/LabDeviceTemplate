@@ -213,7 +213,7 @@ bronkhorst_el_flow:
           title: stop参数
           type: object
         type: UniLabJsonCommandAsync
-    module: unilabos.devices.sensor.bronkhorst_el_flow:BronkhorstElFlow
+    module: CosLab_SHU_Device_package.devices.bronkhorst_el_flow.bronkhorst_el_flow:BronkhorstElFlow
     status_types:
       capacity_unit: str
       flow: float
