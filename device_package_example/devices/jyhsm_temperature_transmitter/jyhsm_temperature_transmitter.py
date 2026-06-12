@@ -1,5 +1,5 @@
 """
-JYHSM 一体化温度变送器驱动
+JY-HSM 一体化温度变送器驱动
 厂家：安徽久跃仪表有限公司
 通信协议：Modbus RTU (RS485)
 默认参数：9600, 8N1, 从站地址 1
@@ -182,12 +182,12 @@ UNIT_MAP = {
 @device(
     id="jyhsm_temperature_transmitter",
     category=["temperature"],
-    description="JYHSM 一体化温度变送器，Modbus RTU",
-    display_name="JYHSM 温度变送器"
+    description="JY-HSM 一体化温度变送器，Modbus RTU",
+    display_name="JY-HSM 温度变送器"
 )
 class JyhsmTemperatureTransmitter:
     """
-    JYHSM 一体化温度变送器 Modbus RTU 驱动
+    JY-HSM 一体化温度变送器 Modbus RTU 驱动
     (所有数值类型均对齐为 float 以支持 Uni-Lab-OS 框架)
     
     新增功能：

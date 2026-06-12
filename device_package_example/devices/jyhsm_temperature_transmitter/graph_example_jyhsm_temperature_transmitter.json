@@ -2,7 +2,7 @@
     "nodes": [
         {
             "id": "jyhsm_temp_1",
-            "name": "JYHSM一体化温度变送器",
+            "name": "JY-HSM 一体化温度变送器",
             "children": [],
             "parent": null,
             "type": "device",
