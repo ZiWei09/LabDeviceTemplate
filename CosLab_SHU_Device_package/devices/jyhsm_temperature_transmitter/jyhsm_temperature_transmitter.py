@@ -218,6 +218,8 @@ class JyhsmTemperatureTransmitter:
 
         # 温度监控相关（内部状态）
         self._monitoring_task = None
+        self._polling_task = None
+        self._polling_interval: float = 2.0
         self._target_temperature_internal = -999.0  # 内部使用，表示未设置
         self._tolerance_internal = 0.5
         self._monitoring_internal = False
@@ -362,14 +364,30 @@ class JyhsmTemperatureTransmitter:
             temp = _decode_float_abcd(*struct.unpack(">HH", self._read_registers(0x0002, 2)))
             self.data["temperature"] = float(temp)
             self.data["status"] = "Idle"
+            self._polling_task = self._ros_node.create_task(self._polling_loop())
             return True
         except Exception as e:
             self.data["status"] = "Error"
             self.logger.error(f"初始化失败: {e}")
             return False
 
+    async def _polling_loop(self) -> None:
+        while True:
+            try:
+                await self._ros_node.sleep(self._polling_interval)
+                await self.read_temperature()
+            except Exception as e:
+                self.logger.warning(f"轮询异常: {e}")
+
     @action(description="清理资源")
     async def cleanup(self) -> bool:
+        if self._polling_task is not None:
+            self._polling_task.cancel()
+            try:
+                await self._polling_task
+            except Exception:
+                pass
+            self._polling_task = None
         # 停止监控任务
         if self._monitoring_task is not None:
             self._monitoring_task.cancel()
@@ -378,7 +396,7 @@ class JyhsmTemperatureTransmitter:
             except asyncio.CancelledError:
                 pass
             self._monitoring_task = None
-        
+
         self._close_serial()
         self.data["status"] = "Offline"
         self.data["monitoring"] = False

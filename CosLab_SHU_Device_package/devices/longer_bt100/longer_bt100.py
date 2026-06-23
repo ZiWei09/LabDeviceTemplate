@@ -76,6 +76,8 @@ class LongerBT100:
             "direction": "CW",
             "is_fullspeed": False
         }
+        self._polling_task = None
+        self._polling_interval: float = 2.0
 
     @not_action
     def post_init(self, ros_node: "BaseROS2DeviceNode"):
@@ -94,15 +96,31 @@ class LongerBT100:
             )
             self.data["status"] = "Idle"
             self.logger.info(f"Connected to BT100-2J on {self.port} at {self.baudrate}bps")
+            self._polling_task = self._ros_node.create_task(self._polling_loop())
             return True
         except Exception as e:
             self.logger.error(f"Serial Error: {e}")
             self.data["status"] = "Error"
             return False
 
+    async def _polling_loop(self) -> None:
+        while True:
+            try:
+                await self._ros_node.sleep(self._polling_interval)
+                await self.read_status()
+            except Exception as e:
+                self.logger.warning(f"轮询异常: {e}")
+
     @action(description="清理资源")
     async def cleanup(self) -> bool:
         """关闭串口连接"""
+        if self._polling_task is not None:
+            self._polling_task.cancel()
+            try:
+                await self._polling_task
+            except Exception:
+                pass
+            self._polling_task = None
         try:
             if self.ser and self.ser.is_open:
                 self.ser.close()

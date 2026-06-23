@@ -116,7 +116,9 @@ class DHJFCirculationBath:
         self.timeout = float(self.config.get('timeout', 1.0))
 
         self.client = None
-        self._connected = False  # 添加连接状态标志
+        self._connected = False
+        self._polling_task = None
+        self._polling_interval: float = 2.0
         
         # 预填充所有属性（硬约束3）
         self.data = {
@@ -313,10 +315,26 @@ class DHJFCirculationBath:
         self._refresh()
         self.data["status"] = "Idle"
         self.logger.info("[INITIALIZE] 初始化完成")
+        self._polling_task = self._ros_node.create_task(self._polling_loop())
         return True
+
+    async def _polling_loop(self) -> None:
+        while True:
+            try:
+                await self._ros_node.sleep(self._polling_interval)
+                self._refresh()
+            except Exception as e:
+                self.logger.warning(f"轮询异常: {e}")
 
     @action(description="清理资源")
     async def cleanup(self) -> bool:
+        if self._polling_task is not None:
+            self._polling_task.cancel()
+            try:
+                await self._polling_task
+            except Exception:
+                pass
+            self._polling_task = None
         self._disconnect()
         self.data["status"] = "Idle"
         return True

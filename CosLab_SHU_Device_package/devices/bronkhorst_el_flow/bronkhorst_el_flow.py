@@ -73,6 +73,8 @@ class BronkhorstElFlow:
         self._threshold_pct = float(self.config.get("threshold") or kwargs.get("threshold", 2.0))
 
         self._instrument = None
+        self._polling_task = None
+        self._polling_interval: float = float(self.config.get("polling_interval", 2.0))
 
     @not_action
     def post_init(self, ros_node: "BaseROS2DeviceNode"):
@@ -110,14 +112,30 @@ class BronkhorstElFlow:
             self._poll_values()
             self.data["status"] = "Idle"
             self.logger.info("Bronkhorst MFC 连接成功")
+            self._polling_task = self._ros_node.create_task(self._polling_loop())
             return True
         except Exception as e:
             self.logger.error(f"连接失败: {e}")
             self.data["status"] = "Offline"
             return False
 
+    async def _polling_loop(self) -> None:
+        while True:
+            try:
+                await self._ros_node.sleep(self._polling_interval)
+                self._poll_values()
+            except Exception as e:
+                self.logger.warning(f"轮询异常: {e}")
+
     @action(description="清理资源")
     async def cleanup(self) -> bool:
+        if self._polling_task is not None:
+            self._polling_task.cancel()
+            try:
+                await self._polling_task
+            except Exception:
+                pass
+            self._polling_task = None
         try:
             if self._instrument is not None:
                 try:
